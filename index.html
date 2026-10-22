@@ -503,7 +503,10 @@ function render(p,time){
   if(p>a.end&&CH[i+1]){ const l=ease((p-a.end)/LINK); b=CH[i+1]; mixv=l;
     za=dv+(dv>.2?.3:.18)*l; pa=[a.pan[0]*(1+l),a.pan[1]*(1+l)]; zb=-.10*(1-l); }
   bind(a,0); bind(b||a,2);
-  const fa=fitOf(a,u), fb=b?fitOf(b,0):fa;
+  // the phone sideways glide runs only between a chapter's first and last stop (card by card), never during the fast
+  // glide in or out — spread over the whole chapter it lurched sideways on the way out of page 1 (Joel)
+  const su=c=>c.cards.length?clamp((p-c.start-IN)/(CARD*c.cards.length)):.5;
+  const fa=fitOf(a,su(a)), fb=b?fitOf(b,b.cards.length?0:.5):fa;
   gl.uniform4f(U.fA,...fa); gl.uniform4f(U.fB,...fb);
   gl.uniform2f(U.pA,...pa); gl.uniform2f(U.pB,...pb); gl.uniform2f(U.res,cv.width,cv.height);
   // Reduce Motion on: keep a gentle half-strength move instead of none (none felt like a flipbook)
