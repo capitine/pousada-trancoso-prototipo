@@ -361,7 +361,7 @@ const SONGS=[['PT-007-A','Roda em Setiba','samba de roda'],['PT-006-A','Maré de
   ['PT-007-B','Samba das Três Praias','samba de roda'],['PT-006-B','Brisa da Restinga','bossa nova'],
   ['PT-009-B','Lagoa Escura','ijexá'],['PT-008-B','Pé na Areia','baião'],['PT-001b-B','Céu de Peracanga','violão']];
 let ctx=null, soundOn=false, lifeT=null, stopT=null;
-const BUF={}, BED={ondas:{}, musica:{}};
+const BUF={}, BED={ondas:{}, musica:{}}, ALIVE=new Set();   // ALIVE: kids/gull clips playing right now
 const song={i:0, src:null, at:0, off:0};        // current track, when it started, where it was paused
 async function load(n){
   if(n in BUF) return BUF[n];
@@ -392,6 +392,8 @@ function sound(on){
   if(on){ ctx.resume(); startBed('ondas'); if(!song.src) playSong(song.i, song.off); level('ondas',MIX.ondas); level('musica',MIX.musica);
     lifeT=setTimeout(lifeOnce,3000); }                 // first gull/kids soon after tapping
   else { if(song.src) song.off=Math.max(0,ctx.currentTime-song.at); level('ondas',0,.8); level('musica',0,.8);
+    // kids/gulls already mid-clip fade out with everything else (Joel: they kept talking after pause)
+    ALIVE.forEach(({sN,g})=>{ const t=ctx.currentTime; g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value,t); g.gain.linearRampToValueAtTime(0,t+.8); try{sN.stop(t+.85)}catch(e){} }); ALIVE.clear();
     stopT=setTimeout(()=>{ const b=BED.ondas; if(b.src){ b.src.stop(); b.src=null; } stopSong(); },900); }
 }
 // mini player: hover ♪ (or tap it on a phone) -> ⏮ ▶/⏸ ⏭ + song name; tucks away 1.5 s after the pointer leaves
@@ -428,7 +430,8 @@ const LIFE=[['gaivota-1',.35],['gaivota-2',.32],['criancas-1',.28],['criancas-2'
 async function lifeOnce(){
   if(soundOn){ const [n,v]=LIFE[Math.floor(Math.random()*LIFE.length)]; const buf=await load(n);
     if(buf&&soundOn){ const g=ctx.createGain(); g.gain.value=clamp(v*MIX.vida*(.7+Math.random()*.3),0,1); g.connect(ctx.destination);
-      const sN=ctx.createBufferSource(); sN.buffer=buf; sN.connect(g); sN.start(); } }
+      const sN=ctx.createBufferSource(); sN.buffer=buf; sN.connect(g); sN.start();
+      const c={sN,g}; ALIVE.add(c); sN.onended=()=>ALIVE.delete(c); } }
   clearTimeout(lifeT); if(soundOn) lifeT=setTimeout(lifeOnce, 7000+Math.random()*12000);
 }
 if(location.search.includes('mix')){            // tuning panel: three sliders, numbers shown so Joel can tell me the mix
