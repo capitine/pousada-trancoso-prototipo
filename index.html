@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pousada Trancoso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f6efe2;--muted:#e6dccb;--coral:#e0684b;--night:#14110f}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;overflow:hidden;background:var(--night);color:var(--paper);font:400 16px/1.6 Inter,system-ui,sans-serif}
+button{font:inherit;color:inherit;cursor:pointer}
+/* ponytail: virtual scroll — wheel/touch/keys drive one number, so it works inside previews that block page scrolling */
+#gl{position:fixed;inset:0;width:100%;height:100%;touch-action:none;display:block}
+.shade{position:fixed;inset:0;pointer-events:none;z-index:1;background:linear-gradient(90deg,rgba(15,12,10,.55),rgba(15,12,10,0) 48%,rgba(15,12,10,0) 52%,rgba(15,12,10,.45))}
+.flash{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0;background:#f4ecde;transition:opacity .35s}
+.flash.on{opacity:1}
+.top{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:18px;padding:18px 28px;z-index:6;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.top b{font:600 19px Fraunces,serif;letter-spacing:.01em;text-transform:none;margin-right:auto}
+.status{opacity:.85}
+.pill{border:1px solid rgba(246,239,226,.55);background:rgba(20,17,15,.2);padding:8px 15px;border-radius:99px;text-decoration:none;color:var(--paper);letter-spacing:.14em;text-transform:uppercase;font-size:12px}
+.pill.solid{background:var(--coral);border-color:var(--coral)}
+.progress{position:fixed;left:0;right:0;top:0;height:2px;z-index:7}.progress i{display:block;height:100%;background:var(--coral);transform-origin:0 50%;transform:scaleX(0)}
+.copy{position:fixed;top:50%;width:min(420px,38vw);opacity:0;z-index:3;transform:translateY(-50%);text-shadow:0 1px 3px rgba(0,0,0,.55),0 1px 18px rgba(0,0,0,.6);pointer-events:none}
+/* soft edge-free glow behind each text block so busy photos (trees, houses) don't fight the letters */
+.copy::before{content:"";position:absolute;inset:-70px -90px;z-index:-1;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(15,12,10,.72),rgba(15,12,10,.5) 55%,rgba(15,12,10,0));filter:blur(10px)}
+.copy.left{left:7vw}.copy.right{right:7vw}
+.copy.bottom{top:auto;bottom:9vh;left:50%;transform:translateX(-50%);width:min(640px,84vw);text-align:center}
+.kicker{display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.copy.bottom .kicker,.copy.bottom .price{justify-content:center}
+.kicker i{font-style:normal;color:var(--coral)}
+.kicker::after{content:"";flex:0 0 40px;height:1px;background:rgba(246,239,226,.5)}
+h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
+.copy p{font-size:16px;color:#f3ebdd}
+.price{display:flex;gap:22px;margin-top:16px;flex-wrap:wrap}
+.price div{border-top:1px solid var(--coral);padding-top:6px;font-size:12px;color:var(--muted)}
+.price strong{display:block;font:600 24px Fraunces,serif;color:#fff}
+.cta{display:inline-block;margin-top:18px;background:var(--coral);color:#fff;text-decoration:none;padding:12px 20px;border-radius:99px;font-weight:500;text-shadow:none}
+.note{font-size:12px!important;color:var(--muted)!important;margin-top:10px;font-style:italic}
+.polaroid{position:fixed;width:min(180px,17vw);background:#fbf8f2;padding:8px 8px 28px;box-shadow:0 18px 50px rgba(0,0,0,.4);opacity:0;z-index:2;pointer-events:none}
+.polaroid img{width:100%;aspect-ratio:9/13;object-fit:cover;display:block}
+.polaroid span{position:absolute;bottom:6px;left:0;right:0;text-align:center;font:400 13px Fraunces,serif;color:#6b5f55}
+/* chapter drawer: jump straight to a part without travelling through every scene */
+.drawer{position:fixed;inset:0;z-index:9;display:flex;justify-content:flex-end;visibility:hidden}
+.drawer.open{visibility:visible}
+.drawer .bg{position:absolute;inset:0;background:rgba(10,8,7,.5);opacity:0;transition:opacity .3s}
+.drawer.open .bg{opacity:1}
+.drawer nav{position:relative;width:min(380px,100%);height:100%;background:#1c1714;padding:22px 20px calc(22px + env(safe-area-inset-bottom));overflow-y:auto;transform:translateX(100%);transition:transform .35s ease}
+.drawer.open nav{transform:none}
+.drawer header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font:600 20px Fraunces,serif}
+.drawer header button{background:none;border:0;font-size:26px;line-height:1;padding:4px 8px}
+.ch{display:flex;gap:14px;align-items:center;width:100%;text-align:left;background:none;border:0;border-radius:10px;padding:8px;margin-bottom:4px}
+.ch:hover,.ch.on{background:rgba(246,239,226,.08)}
+.ch img{width:84px;height:58px;object-fit:cover;border-radius:6px;flex:none}
+.ch small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--coral)}
+.ch span{font:600 16px/1.25 Fraunces,serif}
+.drawer .book{display:block;text-align:center;margin-top:14px}
+.bar{display:none}
+.hint{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.18em;text-transform:uppercase;z-index:4;transition:opacity .8s;text-align:center;pointer-events:none}
+.hint i{display:block;width:1px;height:34px;margin:8px auto 0;background:linear-gradient(var(--paper),transparent);animation:drip 2.2s ease-in-out infinite}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+@media (max-width:760px){
+  .top{padding:14px 16px}.top .status,.top .pill{display:none}
+  .copy,.copy.left,.copy.right,.copy.bottom{left:20px;right:20px;width:auto;top:auto;bottom:calc(92px + env(safe-area-inset-bottom));transform:none;text-align:left}
+  .copy.bottom .kicker,.copy.bottom .price{justify-content:flex-start}
+  h1,h2{font-size:30px}.copy p{font-size:15px}
+  .shade{background:linear-gradient(0deg,rgba(15,12,10,.85),rgba(15,12,10,.25) 55%,rgba(15,12,10,0))}
+  .polaroid{display:none}
+  .bar{display:flex;position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:6;gap:8px;align-items:center;
+    background:rgba(28,23,20,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:16px;padding:8px}
+  .bar .pill{display:block;padding:10px 14px}
+  .bar .now{flex:1;font-size:12px;letter-spacing:.06em;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hint{bottom:auto;top:44%}
+}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div class="shade"></div>
+<div class="flash" id="flash"></div>
+<header class="top"><b>Pousada Trancoso</b><span class="status" id="status"></span><span class="status" style="opacity:.55">Protótipo</span>
+  <button class="pill" data-open>Capítulos</button><a class="pill solid" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar</a></header>
+<div class="progress"><i id="bar"></i></div>
+<div class="hint" id="hint">Deslize para descer<i></i></div>
+<div class="bar"><button class="pill" data-open>☰ Capítulos</button><span class="now" id="now"></span><a class="pill solid" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar</a></div>
+<div class="drawer" id="drawer"><div class="bg" data-close></div>
+  <nav aria-label="Capítulos"><header>Capítulos<button data-close aria-label="Fechar">×</button></header><div id="list"></div>
+  <a class="cta book" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar pelo WhatsApp</a></nav></div>
+
+<script>
+// fx/fy: where to keep the crop on a tall phone screen (0..1 across the photo). pan: sideways camera travel over the scene.
+const CH = [
+  {img:'01-amanhecer', fx:.5, fy:.5, pan:[.05,0], side:'left', k:'Setiba · Guarapari', short:'Amanhecer',
+   h:'O dia começa a poucos passos do mar', p:'Uma pousada de família no litoral do Espírito Santo. Acorde com o som das ondas e desça para a areia antes do café.'},
+  {img:'02-setiba', fx:.42, fy:.5, pan:[-.05,0], side:'right', k:'A praia', short:'Praia e piscina', pol:['ig-praia','Setiba vista do alto',[8,56],-5],
+   h:'Praia, piscina e café da manhã', p:'Duas piscinas, área de lazer ao ar livre e café da manhã incluso. A praia de Setiba fica logo ali.'},
+  {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], side:'left', k:'Aventura', short:'Quadriciclo e lagoa', pol:['ig-familia','Fim de semana em família',[68,14],4],
+   h:'Quadriciclo, lagoa e restinga', p:'Passeio de quadriciclo pela região do Parque Paulo César Vinha, onde a lagoa de água escura encontra o mar.',
+   price:[['R$ 400','Casal, com café'],['R$ 490','Casal + 1 filho']], note:'Fim de semana em família · outubro a dezembro, sexta a domingo'},
+  {img:'04-mesa', fx:.45, fy:.6, pan:[.04,-.02], side:'right', k:'Restaurante', short:'Mesa farta',
+   h:'Dias de mesa farta', p:'Dias de carne, pratos especiais e frutos do mar no restaurante da pousada.',
+   note:'Exemplo: cardápio e dias a confirmar com a pousada'},
+  {img:'05-por-do-sol', fx:.6, fy:.5, pan:[-.04,0], side:'left', k:'Sexta-feira romântica', short:'Sexta romântica', pol:['ig-romantica','Suíte decorada',[64,48],-3],
+   h:'Quando o sol se põe, a mesa é só de vocês', p:'Suíte decorada, jantar à luz de velas e café da manhã no dia seguinte.',
+   price:[['R$ 350','Por casal']]},
+  {img:'06-noite', fx:.62, fy:.45, pan:[.05,.02], side:'right', k:'Noites temáticas', short:'Baile e karaokê', pol:['ig-baile','Baile Retrô',[9,14],-6], pol2:['ig-pista','Pista cheia',[22,50],5],
+   h:'Baile Retrô, flashback e karaokê', p:'Noites de anos 60, 80 e 90, karaokê e shows ao vivo. Quem veio, aprovou.'},
+  {img:'00-restinga', fx:.42, fy:.55, pan:[0,-.04], side:'bottom', k:'Réveillon 2027', short:'Réveillon', pol:['ig-reveillon','Réveillon Guarapari',[74,10],4],
+   h:'Vire o ano com os pés na areia', p:'5 dias e 4 noites, show ao vivo, queima de fogos e mesa reservada para a virada.',
+   price:[['5x R$ 600','Até 4 pessoas'],['Café','Incluso']], cta:true},
+];
+// Route lengths in screen-heights (sn-motion-html: scene 4.6 / connector 1.2; shorter here because phones swipe less)
+const SCENE=1.4, LINK=.9;   // Joel: "scroll a lot to move a little" at 2.8/1.6 — about 10 wheel clicks per chapter now
+const $=id=>document.getElementById(id);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches && !location.search.includes('motion');
+const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)), ease=v=>(v=clamp(v),v*v*(3-2*v));
+let off=0; CH.forEach((c,i)=>{ c.start=off; off+=SCENE; c.end=off; if(i<CH.length-1) off+=LINK });
+const TOTAL=CH[CH.length-1].end-.5;
+
+// ---- WebGL "3D photo": each photo + its depth map; the camera dollies and pans, near pixels move more than far ones
+const cv=$('gl'), gl=cv.getContext('webgl',{antialias:false,premultipliedAlpha:false});
+const VS=`attribute vec2 p;varying vec2 v;void main(){v=p*.5+.5;gl_Position=vec4(p,0,1);}`;
+const FS=`precision highp float;varying vec2 v;
+uniform sampler2D tA,dA,tB,dB;uniform vec4 fA,fB;uniform vec2 pA,pB,res;uniform float zA,zB,mixv,time;
+vec2 fit(vec2 q,vec4 f){return vec2(.5)+q*f.xy+f.zw;}
+vec3 scene(sampler2D t,sampler2D d,vec4 f,vec2 uv,float z,vec2 pan){
+  // one lookup into a heavily blurred depth map: smooth bending, no ghost copies on thin branches
+  // (the 4-step search tore branches apart — Joel's screenshots, 2026-10-22)
+  vec2 q=uv-.5; float dep=texture2D(d,fit(q,f)).r;
+  vec2 s=q/(1.+z*(.55+.45*dep))-pan*(dep-.35)*.6;
+  return texture2D(t,fit(s,f)).rgb;}
+float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+  return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1)),f.x),f.y);}
+float fbm(vec2 p){return n(p)*.55+n(p*2.1)*.28+n(p*4.3)*.17;}
+void main(){
+  vec2 uv=vec2(v.x,1.-v.y), sway=vec2(sin(time*.31),cos(time*.23))*.004;
+  vec3 a=scene(tA,dA,fA,uv,zA,pA+sway);
+  if(mixv<=0.){gl_FragColor=vec4(a,1);return;}
+  vec3 b=scene(tB,dB,fB,uv,zB,pB+sway);
+  // ink-wash dissolve: a soft cloudy front sweeps through; far parts of the next photo appear first
+  float db=texture2D(dB,fit(uv-.5,fB)).r, w=fbm(uv*vec2(res.x/res.y,1.)*2.6+time*.03)*.75+(1.-db)*.25;
+  float m=smoothstep(w-.16,w+.16,mixv*1.35-.17), haze=(1.-abs(m*2.-1.))*.55*sin(3.1416*mixv);
+  gl_FragColor=vec4(mix(mix(a,b,m),vec3(.96,.93,.87),haze),1);}`;
+function sh(t,s){const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);
+  if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(o);return o}
+let prog, U={};
+if(gl){
+  prog=gl.createProgram(); gl.attachShader(prog,sh(gl.VERTEX_SHADER,VS)); gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,FS));
+  gl.linkProgram(prog); gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const loc=gl.getAttribLocation(prog,'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  ['tA','dA','tB','dB','fA','fB','pA','pB','res','zA','zB','mixv','time'].forEach(k=>U[k]=gl.getUniformLocation(prog,k));
+  [['tA',0],['dA',1],['tB',2],['dB',3]].forEach(([k,u])=>gl.uniform1i(U[k],u));
+}
+const PHOTO=n=>(window.IMG&&IMG[n])||`img/${n}.jpg`, DEPTH=n=>(window.DEP&&DEP[n])||`depth/${n}.jpg`;
+function tex(src,c,key){
+  const t=gl.createTexture(), im=new Image();
+  gl.bindTexture(gl.TEXTURE_2D,t); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([20,17,15,255]));
+  im.onload=()=>{ gl.bindTexture(gl.TEXTURE_2D,t); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);
+    [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(w=>gl.texParameteri(gl.TEXTURE_2D,w,gl.CLAMP_TO_EDGE));
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    if(key==='t') c.aspect=im.width/im.height; c[key+'ok']=true; dirty=true; };
+  im.src=src; return t;
+}
+if(gl) CH.forEach(c=>{ c.t=tex(PHOTO(c.img),c,'t'); c.d=tex(DEPTH(c.img),c,'d'); });
+function fitOf(c){                 // cover the screen with 14% spare so camera moves never show an edge; keep the crop on fx/fy
+  const sa=cv.width/cv.height, ia=c.aspect||1.5, M=1.14;
+  let sx=1,sy=1; if(sa<ia) sx=sa/ia; else sy=ia/sa; sx/=M; sy/=M;
+  return [sx,sy,clamp(c.fx-.5,-(1-sx)/2+.02,(1-sx)/2-.02),clamp(c.fy-.5,-(1-sy)/2+.02,(1-sy)/2-.02)];
+}
+function bind(c,unit){ gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D,c.t); gl.activeTexture(gl.TEXTURE0+unit+1); gl.bindTexture(gl.TEXTURE_2D,c.d) }
+function resize(){ const r=Math.min(devicePixelRatio||1,2); cv.width=Math.round(innerWidth*r); cv.height=Math.round(innerHeight*r);
+  gl&&gl.viewport(0,0,cv.width,cv.height); dirty=true }
+addEventListener('resize',resize);
+
+// ---- copy, polaroids, chapter list
+const els=CH.map((c,i)=>{
+  const t=document.createElement('article'); t.className='copy '+c.side; const H=i?'h2':'h1';
+  t.innerHTML=`<p class="kicker"><i>${String(i+1).padStart(2,'0')}</i>${c.k}</p><${H}>${c.h}</${H}><p>${c.p}</p>`+
+    (c.price?`<div class="price">${c.price.map(([a,b])=>`<div><strong>${a}</strong>${b}</div>`).join('')}</div>`:'')+
+    (c.note?`<p class="note">${c.note}</p>`:'')+
+    (c.cta?`<a class="cta" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar pelo WhatsApp</a>`:'');
+  document.body.appendChild(t);
+  const pols=[c.pol,c.pol2].filter(Boolean).map(([src,cap,[x,y],r])=>{
+    const p=document.createElement('figure'); p.className='polaroid'; p.style.left=x+'vw'; p.style.top=y+'vh'; p.dataset.r=r;
+    p.innerHTML=`<img src="${PHOTO(src)}" alt="${cap}"><span>${cap}</span>`; document.body.appendChild(p); return p;
+  });
+  const b=document.createElement('button'); b.className='ch';
+  b.innerHTML=`<img src="${PHOTO(c.img)}" alt=""><div><small>${String(i+1).padStart(2,'0')} · ${c.k}</small><span>${c.short}</span></div>`;
+  b.onclick=()=>jump(i); $('list').appendChild(b);
+  return {t,pols,b};
+});
+
+// ---- input: one virtual position eased toward a target
+let target=0, pos=0, dirty=true;
+const push=d=>{target=clamp(target+d,0,TOTAL)};
+const drawer=$('drawer'), isOpen=()=>drawer.classList.contains('open');
+document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>drawer.classList.add('open'));
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>drawer.classList.remove('open'));
+function jump(i){                      // quick fade, then land on the chapter — no travelling through every scene
+  drawer.classList.remove('open'); $('flash').classList.add('on');
+  setTimeout(()=>{ target=pos=CH[i].start+(i?.35:0); draw(pos); setTimeout(()=>$('flash').classList.remove('on'),120) },360);
+}
+addEventListener('wheel',e=>{ if(isOpen())return; e.preventDefault(); push(clamp(e.deltaY,-120,120)/innerHeight*3.2)},{passive:false});   // ~6 wheel clicks per chapter
+let ty=null, vel=0, lt=0;
+addEventListener('touchstart',e=>{ if(isOpen()||e.target.closest('.bar,a,button'))return; ty=e.touches[0].clientY; vel=0; lt=performance.now()},{passive:true});
+addEventListener('touchmove',e=>{ if(ty===null)return; e.preventDefault();
+  const y=e.touches[0].clientY, d=(ty-y)/innerHeight*1.8, now=performance.now();
+  vel=d/Math.max(1,now-lt)*16; lt=now; ty=y; push(d)},{passive:false});
+addEventListener('touchend',()=>{ if(ty!==null) push(clamp(vel*10,-.9,.9)); ty=null });
+addEventListener('keydown',e=>{
+  if(e.key==='Escape') drawer.classList.remove('open');
+  if(isOpen()) return;
+  if(['ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();push(.5)}
+  if(['ArrowUp','PageUp'].includes(e.key)){e.preventDefault();push(-.5)}
+});
+
+let active=-1;
+function render(p,time){
+  if(!gl) return;
+  // which photo pair is on screen, and how far the camera has travelled
+  let i=CH.reduce((s,c,k)=>p>=c.start?k:s,0), a=CH[i], b=null, mixv=0, za, zb=0, pa, pb=[0,0];
+  const u=clamp((p-a.start)/SCENE);
+  za=.10*u; pa=[a.pan[0]*u,a.pan[1]*u];
+  if(p>a.end&&CH[i+1]){ const l=ease((p-a.end)/LINK); b=CH[i+1]; mixv=l;
+    za=.10+.18*l; pa=[a.pan[0]*(1+l),a.pan[1]*(1+l)]; zb=-.10*(1-l); }
+  bind(a,0); bind(b||a,2);
+  const fa=fitOf(a), fb=fitOf(b||a);
+  gl.uniform4f(U.fA,...fa); gl.uniform4f(U.fB,...fb);
+  gl.uniform2f(U.pA,...pa); gl.uniform2f(U.pB,...pb); gl.uniform2f(U.res,cv.width,cv.height);
+  // Reduce Motion on: keep a gentle half-strength move instead of none (none felt like a flipbook)
+  gl.uniform1f(U.zA,reduce?za*.5:za); gl.uniform1f(U.zB,reduce?zb*.5:zb); gl.uniform1f(U.mixv,mixv); gl.uniform1f(U.time,reduce?0:time);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+}
+function draw(p){
+  CH.forEach((c,i)=>{
+    const u=clamp((p-c.start)/SCENE), inside=p>=c.start-.001&&p<=c.end, last=i===CH.length-1;
+    const o=inside?Math.min(i?ease(u/.12):1, last?1:ease((1-u)/.12)):(last&&p>c.end?1:0);
+    const {t,pols}=els[i];
+    t.style.opacity=o.toFixed(3); t.style.translate=reduce?'0':`0 ${((1-o)*14).toFixed(1)}px`;
+    t.style.pointerEvents=o>.6?'auto':'none';
+    pols.forEach((q,k)=>{q.style.opacity=o.toFixed(3); q.style.transform=`rotate(${q.dataset.r}deg) translateY(${((1-o)*26+k*6).toFixed(1)}px)`});
+  });
+  const cur=CH.reduce((a,c,i)=>p>=c.start-LINK/2?i:a,0);
+  if(cur!==active){ active=cur; const c=CH[cur], label=`${String(cur+1).padStart(2,'0')} — ${c.short}`;
+    $('status').textContent=label; $('now').textContent=label; els.forEach((e,i)=>e.b.classList.toggle('on',i===cur)); }
+  $('bar').style.transform=`scaleX(${(p/TOTAL).toFixed(4)})`;
+  $('hint').style.opacity=p>.15?0:1;
+  dirty=true;
+}
+resize();
+(function loop(ms){
+  const d=target-pos;
+  if(Math.abs(d)>.0004){ pos+=d*(reduce?.15:.1); draw(pos); }
+  render(pos,(ms||0)/1000);         // always redraw: the gentle sway keeps the photo alive while you read
+  requestAnimationFrame(loop);
+})();
+draw(0);
+</script>
+</body>
+</html>
