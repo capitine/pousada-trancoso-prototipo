@@ -56,7 +56,7 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 .cta{display:inline-block;margin-top:18px;background:var(--coral);color:#fff;text-decoration:none;padding:12px 20px;border-radius:99px;font-weight:500;text-shadow:none}
 .note{font-size:12px!important;color:var(--muted)!important;margin-top:10px;font-style:italic}
 .polaroid{position:fixed;width:min(200px,16vw);background:#fbf8f2;padding:8px 8px 30px;box-shadow:0 18px 50px rgba(0,0,0,.45);opacity:0;z-index:2;pointer-events:none;will-change:transform,opacity}
-.polaroid img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
+.polaroid img,.polaroid video{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
 .polaroid span{position:absolute;bottom:6px;left:0;right:0;text-align:center;font:400 13px Fraunces,serif;color:#6b5f55}
 .polaroid::after{content:"Pousada Trancoso";position:absolute;top:14px;right:-4px;transform:rotate(8deg);padding:2px 7px;border:1.5px solid rgba(176,60,40,.75);
   border-radius:3px;font:600 9px Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:rgba(176,60,40,.85);background:rgba(251,248,242,.85)}
@@ -115,7 +115,7 @@ const CH = [
   {img:'01-amanhecer', fx:.5, fy:.5, pan:[.05,0], side:'left', hero:true, k:'Setiba · Guarapari · ES', short:'Pousada Trancoso',
    h:'Pousada Trancoso', tag:'O dia começa a poucos passos do mar', p:'Pousada e restaurante de família no litoral do Espírito Santo.'},
   {img:'02-setiba', fx:.42, fy:.5, pan:[-.05,0], side:'right', k:'A praia', short:'Praia e piscina',
-   cards:[['fb-piscina','A piscina'],['fb-cafe','Café na beira da piscina'],['ig-praia','Setiba vista do alto']],
+   cards:[['v-piscina','A piscina'],['v-cafe','Café da manhã'],['v-praia','Setiba vista do alto']],
    h:'Praia, piscina e café da manhã', p:'Duas piscinas, área de lazer ao ar livre e café da manhã incluso. A praia de Setiba fica logo ali.'},
   {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['ig-familia','Fim de semana em família']],
    h:'Quadriciclo, lagoa e restinga', p:'Passeio de quadriciclo pela região do Parque Paulo César Vinha, onde a lagoa de água escura encontra o mar.',
@@ -128,8 +128,8 @@ const CH = [
    cards:[['ig-romantica','Suíte decorada'],['fb-hidro','Hidro à noite'],['fb-varanda','Petiscos na varanda']],
    h:'Quando o sol se põe, a mesa é só de vocês', p:'Suíte decorada, jantar à luz de velas e café da manhã no dia seguinte.',
    price:[['R$ 350','Por casal']]},
-  {img:'06-noite', fx:.62, fy:.45, pan:[.05,.02], side:'right', k:'Noites temáticas', short:'Baile e karaokê',
-   cards:[['fb-karaoke','Noite de karaokê'],['ig-baile','Baile Retrô'],['ig-pista','Pista cheia']],
+  {img:'06-salao', fx:.45, fy:.55, pan:[.04,-.02], side:'right', k:'Noites temáticas', short:'Baile e karaokê',
+   cards:[['fb-karaoke','Noite de karaokê'],['v-pista','Baile Flashback'],['v-cantor','Show ao vivo'],['v-noite','Noite na varanda']],
    h:'Baile Retrô, flashback e karaokê', p:'Noite de karaokê com entrada liberada, bailes de anos 60, 80 e 90 e shows ao vivo. Quem veio, aprovou.'},
   {img:'00-restinga', fx:.42, fy:.55, pan:[0,-.04], side:'bottom', k:'Réveillon 2027', short:'Réveillon', cards:[['ig-reveillon','Réveillon Guarapari']],
    h:'Vire o ano com os pés na areia', p:'5 dias e 4 noites, show ao vivo, queima de fogos e mesa reservada para a virada.',
@@ -216,11 +216,14 @@ const els=CH.map((c,i)=>{
   document.body.appendChild(t);
   const pols=c.cards.map(([src,cap],k)=>{
     const p=document.createElement('figure'); p.className='polaroid'; p.dataset.k=k; p.dataset.r=[-6,5,-3,7][k%4];
-    p.innerHTML=`<img src="${PHOTO(src)}" alt="${cap}"><span>${cap}</span>`; document.body.appendChild(p); return p;
+    // 'v-' cards are short silent loops cut from their own Facebook reels (Joel: "bring videos in as GIFs")
+    const media=src.startsWith('v-')?`<video src="${(window.VID&&VID[src])||`vid/${src}.mp4`}" muted loop playsinline autoplay preload="auto" aria-label="${cap}"></video>`
+      :`<img src="${PHOTO(src)}" alt="${cap}">`;
+    p.innerHTML=`${media}<span>${cap}</span>`; document.body.appendChild(p); return p;
   });
   c.place=()=>pols.forEach((p,k)=>{   // cards land on the side away from the text, fanned out like photos on a table
     const phone=innerWidth<=760, x0=c.side==='left'?56:c.side==='right'?6:62;
-    p.style.left=(phone?4+k*29:x0+k*10)+'vw'; p.style.top=(phone?11+(k%2)*5:c.side==='bottom'?8+k*6:14+k*17)+'vh'; });
+    p.style.left=(phone?4+(k%3)*29:x0+k*10)+'vw'; p.style.top=(phone?11+(k%2)*5+Math.floor(k/3)*18:c.side==='bottom'?8+k*6:14+k*16)+'vh'; });
   c.place();
   const b=document.createElement('button'); b.className='ch';
   b.innerHTML=`<img src="${PHOTO(c.img)}" alt=""><div><small>${String(i+1).padStart(2,'0')} · ${c.k}</small><span>${c.short}</span></div>`;
@@ -329,6 +332,8 @@ function draw(p){
     pols.forEach((q,k)=>{                          // card k drops in on the way to stop k+1
       const d=clamp((p-(c.start+IN+CARD*k+.04))/(CARD*.85)), e=reduce?ease(d):back(d), r=+q.dataset.r, s=k%2?1:-1;
       q.style.opacity=(Math.min(1,d*5)*o).toFixed(3);
+      const vv=q.querySelector('video'), seen=d>0&&o>.05;      // loops play only while their card is on screen
+      if(vv&&seen&&vv.paused) vv.play().catch(()=>{}); else if(vv&&!seen&&!vv.paused) vv.pause();
       q.style.transform=`translateY(${((1-e)*-75).toFixed(2)}vh) rotate(${(r+s*28*(1-e)).toFixed(2)}deg) scale(${(1+.18*(1-e)).toFixed(3)})`;
       q.style.boxShadow=`0 ${(6+30*(1-d)).toFixed(0)}px ${(18+50*(1-d)).toFixed(0)}px rgba(0,0,0,${(.55-.25*(1-d)).toFixed(2)})`;
     });
