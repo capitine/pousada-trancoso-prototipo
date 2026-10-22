@@ -103,6 +103,8 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 .mp div{display:flex;gap:8px;justify-content:center}
 .mp button{width:40px;height:40px;border-radius:50%;border:1px solid rgba(246,239,226,.35);background:rgba(246,239,226,.06);font-size:15px}
 .mp button:hover{background:rgba(246,239,226,.18)}
+.mp .vol{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px}
+.mp .vol input{flex:1;accent-color:var(--coral);height:28px}
 /* ☰ opens the song list under the controls */
 .mp ol{display:none;list-style:none;margin:10px 0 0;padding:8px 0 0;border-top:1px solid rgba(246,239,226,.15);max-height:min(46vh,340px);overflow-y:auto}
 .mp.list ol{display:block}
@@ -377,7 +379,9 @@ const SONGS=[['PT-007-A','Roda em Setiba','samba de roda'],['PT-006-A','Maré de
   ['PT-009-A','Ijexá do Entardecer','ijexá'],['PT-008-A','Baião da Varanda','baião'],['PT-001b-A','Violão de Meaípe','violão'],
   ['PT-007-B','Samba das Três Praias','samba de roda'],['PT-006-B','Brisa da Restinga','bossa nova'],
   ['PT-009-B','Lagoa Escura','ijexá'],['PT-008-B','Pé na Areia','baião'],['PT-001b-B','Céu de Peracanga','violão']];
-let ctx=null, soundOn=false, lifeT=null, stopT=null;
+let ctx=null, soundOn=false, lifeT=null, stopT=null, MASTER=null;
+// master volume (Joel: "the player is missing a volume button"); remembered per viewer, squared so the slider feels even
+let VOL=.8; try{ const v=localStorage.getItem('pt-vol'); if(v!==null) VOL=+v; }catch(e){}
 const BUF={}, BED={ondas:{}, musica:{}}, ALIVE=new Set();   // ALIVE: kids/gull clips playing right now
 const song={i:0, src:null, at:0, off:0};        // current track, when it started, where it was paused
 async function load(n){
@@ -404,7 +408,8 @@ async function playSong(i, from=0){                  // one song at a time; at i
 function sound(on){
   soundOn=on; document.querySelectorAll('[data-sound]').forEach(x=>x.setAttribute('aria-pressed',on)); showSong();
   if(!ctx){ ctx=new (window.AudioContext||window.webkitAudioContext)();
-    for(const n in BED){ BED[n].gain=ctx.createGain(); BED[n].gain.gain.value=0; BED[n].gain.connect(ctx.destination); } }
+    MASTER=ctx.createGain(); MASTER.gain.value=VOL*VOL; MASTER.connect(ctx.destination);
+    for(const n in BED){ BED[n].gain=ctx.createGain(); BED[n].gain.gain.value=0; BED[n].gain.connect(MASTER); } }
   clearTimeout(stopT); clearTimeout(lifeT);
   if(on){ ctx.resume(); startBed('ondas'); if(!song.src) playSong(song.i, song.off); level('ondas',MIX.ondas); level('musica',MIX.musica);
     lifeT=setTimeout(lifeOnce,3000); }                 // first gull/kids soon after tapping
@@ -417,10 +422,13 @@ function sound(on){
 const MP=document.createElement('div'); MP.className='mp'; MP.setAttribute('role','group'); MP.setAttribute('aria-label','Música');
 MP.innerHTML='<small id="mpS">Música</small><b id="mpT"></b><div><button data-mp="-1" aria-label="Anterior">⏮</button><button data-mp="0" id="mpP" aria-label="Tocar ou pausar">▶</button><button data-mp="1" aria-label="Próxima">⏭</button>'+
   '<button data-mp="list" aria-label="Lista de músicas" aria-expanded="false">☰</button></div>'+
+  `<label class="vol"><span aria-hidden="true">🔈</span><input id="mpV" type="range" min="0" max="1" step="0.01" value="${VOL}" aria-label="Volume"></label>`+
   '<ol id="mpL">'+SONGS.map(([,n,s],i)=>`<li><button data-i="${i}"><b>${n}</b><em>${s}</em></button></li>`).join('')+'</ol>';
 document.body.appendChild(MP);
 function showSong(){ $('mpS').textContent='Música · '+SONGS[song.i][2]; $('mpT').textContent=`${song.i+1}/${SONGS.length} · ${SONGS[song.i][1]}`; $('mpP').textContent=soundOn?'⏸':'▶';
   MP.querySelectorAll('[data-i]').forEach(b=>b.classList.toggle('now',+b.dataset.i===song.i)); }
+$('mpV').oninput=e=>{ VOL=+e.target.value; if(MASTER) MASTER.gain.setTargetAtTime(VOL*VOL,ctx.currentTime,.05);
+  e.target.previousElementSibling.textContent=VOL<.01?'🔇':VOL<.5?'🔈':'🔊'; try{ localStorage.setItem('pt-vol',VOL) }catch(err){} };
 let mpT=null, mpBtn=null;
 function openMP(btn){ clearTimeout(mpT); mpBtn=btn; const r=btn.getBoundingClientRect(), up=r.top>innerHeight/2;
   MP.style.left=Math.min(innerWidth-MP.offsetWidth-12, Math.max(12, r.left+r.width/2-MP.offsetWidth/2))+'px';
@@ -446,7 +454,7 @@ addEventListener('pointerdown',e=>{ if(touch&&MP.classList.contains('on')&&!e.ta
 const LIFE=[['gaivota-1',.35],['gaivota-2',.32],['criancas-1',.28],['criancas-2',.26],['criancas-3',.28],['criancas-4',.26],['criancas-c1',.3],['criancas-c2',.3],['criancas-c3',.3]];
 async function lifeOnce(){
   if(soundOn){ const [n,v]=LIFE[Math.floor(Math.random()*LIFE.length)]; const buf=await load(n);
-    if(buf&&soundOn){ const g=ctx.createGain(); g.gain.value=clamp(v*MIX.vida*(.7+Math.random()*.3),0,1); g.connect(ctx.destination);
+    if(buf&&soundOn){ const g=ctx.createGain(); g.gain.value=clamp(v*MIX.vida*(.7+Math.random()*.3),0,1); g.connect(MASTER);
       const sN=ctx.createBufferSource(); sN.buffer=buf; sN.connect(g); sN.start();
       const c={sN,g}; ALIVE.add(c); sN.onended=()=>ALIVE.delete(c); } }
   clearTimeout(lifeT); if(soundOn) lifeT=setTimeout(lifeOnce, 7000+Math.random()*12000);
