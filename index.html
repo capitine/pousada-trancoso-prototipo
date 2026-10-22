@@ -107,7 +107,7 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 <div class="drawer" id="drawer"><div class="bg" data-close></div>
   <nav aria-label="Capítulos"><header>Capítulos<button data-close aria-label="Fechar">×</button></header><div id="list"></div>
   <a class="cta book" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar pelo WhatsApp</a>
-  <p style="margin-top:18px;font-size:11px;line-height:1.5;color:#a89c8f">Protótipo não oficial. Créditos: fotos da Pousada Trancoso (Instagram/Facebook) e Wikimedia Commons — Marcelo Moryan, Vitor Jubini e outros autores (CC BY-SA). Sons: ondas geradas; gaivota XC707075 (CC0); crianças: “Douzen kids on playground” (domínio público) e “Ambient sound children playing in a park” (CC BY-SA 4.0).</p></nav></div>
+  <p style="margin-top:18px;font-size:11px;line-height:1.5;color:#a89c8f">Protótipo não oficial. Créditos: fotos da Pousada Trancoso (Instagram/Facebook) e Wikimedia Commons — Marcelo Moryan, Vitor Jubini e outros autores (CC BY-SA). Sons: ondas e crianças da biblioteca Sound Ideas (curso de áudio); gaivota XC707075 (CC0); crianças: “Douzen kids on playground” (domínio público) e “Ambient sound children playing in a park” (CC BY-SA 4.0).</p></nav></div>
 
 <script>
 // fx/fy: where to keep the crop on a tall phone screen (0..1 across the photo). pan: sideways camera travel over the scene.
@@ -307,7 +307,7 @@ function sound(on){
 }
 document.querySelectorAll('[data-sound]').forEach(b=>b.onclick=()=>sound(!soundOn));
 // beach life, quiet and at random times so it never repeats the same way: gulls now and then, kids far away
-const LIFE=[['gaivota-1',.2],['gaivota-2',.18],['criancas-1',.13],['criancas-2',.12],['criancas-3',.13],['criancas-4',.12]];
+const LIFE=[['gaivota-1',.2],['gaivota-2',.18],['criancas-1',.13],['criancas-2',.12],['criancas-3',.13],['criancas-4',.12],['criancas-c1',.14],['criancas-c2',.14],['criancas-c3',.14]];
 (function life(){
   setTimeout(()=>{ if(soundOn){ const [n,v]=LIFE[Math.floor(Math.random()*LIFE.length)];
       const a=new Audio((window.AUDIO&&AUDIO[n])||`audio/${n}.mp3`); a.volume=v*(.6+Math.random()*.4); a.play().catch(()=>{}); }
