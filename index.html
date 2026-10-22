@@ -75,6 +75,9 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 .zoom{position:fixed;inset:0;z-index:20;cursor:zoom-out}
 .zbg{position:absolute;inset:0;background:rgba(15,12,10,.62);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;transition:opacity .45s}
 .zoom.on .zbg{opacity:1}
+.orig{position:fixed;left:50%;translate:-50% 0;padding:9px 16px;border-radius:99px;border:1px solid rgba(246,239,226,.5);background:rgba(20,17,15,.55);
+  color:var(--paper);font-size:12px;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;white-space:nowrap;opacity:0;transition:opacity .4s .3s}
+.zoom.on .orig{opacity:1}.orig:hover{background:rgba(246,239,226,.15)}
 .zoom .polaroid{pointer-events:auto;cursor:auto;scale:none;translate:none;rotate:none;will-change:auto;transition:transform .55s cubic-bezier(.2,.85,.25,1)}
 /* chapter drawer: jump straight to a part without travelling through every scene */
 .drawer{position:fixed;inset:0;z-index:9;display:flex;justify-content:flex-end;visibility:hidden}
@@ -255,7 +258,7 @@ const els=CH.map((c,i)=>{
   document.body.appendChild(t);
   const pols=c.cards.map(([src,cap],k)=>{
     const p=document.createElement('figure'); p.className='polaroid'; p.dataset.k=k; p.dataset.r=[-6,5,-3,7][k%4];
-    p.style.setProperty('--r',p.dataset.r); p.onclick=()=>openZoom(p);
+    p.style.setProperty('--r',p.dataset.r); p.dataset.src=src; p.onclick=()=>openZoom(p);
     // 'v-' cards are short silent loops cut from their own Facebook reels (Joel: "bring videos in as GIFs")
     const media=src.startsWith('v-')?`<video src="${(window.VID&&VID[src])||`vid/${src}.mp4`}" muted loop playsinline autoplay preload="auto" aria-label="${cap}"></video>`
       :`<img src="${PHOTO(src)}" alt="${cap}">`;
@@ -293,6 +296,16 @@ const push=d=>{target=clamp(target+d,0,TOTAL); gliding=false; clearTimeout(idle)
 const drawer=$('drawer');
 // Zoomed card: a copy grows from the small card to ~70% of the screen height; click outside (or Esc) sends it back.
 let zoomed=null;
+// Where each card came from (Joel: link the original post; it opens in a NEW tab so this page stays open behind it).
+// Reels matched to their source by the cut commands + a frame check; photos by the Facebook page's photo index.
+const FBR='https://www.facebook.com/reel/', FBP='https://www.facebook.com/photo.php?fbid=';
+const ORIG={'v-piscina':FBR+'972513479200671','v-cafe':FBR+'972513479200671','v-praia':FBR+'972513479200671',
+  'v-quadriciclo':FBR+'3122832904583549','v-dunas':FBR+'3122832904583549','v-almoco':FBR+'3122832904583549',
+  'v-moqueca':FBR+'1216943679815850','v-risoto':'https://www.facebook.com/share/r/19pwwqfeSr/','v-cacao':FBR+'1044406168621476',
+  'v-jantar':FBR+'1876963230242023','v-karaoke':FBR+'1292189166069587','v-pista':FBR+'2252892798841357','v-cantor':FBR+'2252892798841357',
+  'v-fogos':FBR+'1354876449571467','v-ceia':FBR+'1354876449571467',
+  'fb-cafe':FBP+'5479950018692069','fb-caranguejo':FBP+'5424052974281774','fb-festival':FBP+'5484562368230834','fb-hidro':FBP+'5487887234565014',
+  'fb-karaoke':FBP+'1324721029692698','fb-moqueca':FBP+'592807912884017','fb-piscina':FBP+'5479764555377282','fb-varanda':FBP+'5487887237898347'};
 // The copy is the small card itself, scaled up in place: on close it shrinks back onto the exact same spot and
 // angle, then swaps for the original in the same frame (Joel saw it fade out and pop back in).
 function openZoom(p){
@@ -306,6 +319,10 @@ function openZoom(p){
   const big=`translate(${innerWidth/2-p.offsetLeft-w/2}px,${innerHeight/2-p.offsetTop-h/2}px) rotate(0deg) scale(${k})`;
   c.offsetHeight; c.style.transition=''; c.style.transform=big;
   const v=p.querySelector('video'), cv=c.querySelector('video'); if(cv){ cv.currentTime=v.currentTime; cv.play().catch(()=>{}); }
+  const key=p.dataset.src, url=ORIG[key]||(key.startsWith('ig-')?'https://www.instagram.com/pousadatrancoso/':null);
+  if(url){ const a=document.createElement('a'); a.className='orig'; a.href=url; a.target='_blank'; a.rel='noopener';
+    a.textContent=key.startsWith('ig-')?'Ver no Instagram ↗':'Ver post original ↗'; a.style.top=(innerHeight/2+h*k/2+16)+'px';
+    a.onclick=e=>e.stopPropagation(); z.appendChild(a); }
   p.classList.add('gone'); requestAnimationFrame(()=>z.classList.add('on')); zoomed={p,z,c,rest};
   z.onclick=closeZoom;
 }
