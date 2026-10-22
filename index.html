@@ -61,6 +61,9 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 .price div{border-top:1px solid var(--coral);padding-top:6px;font-size:12px;color:var(--muted)}
 .price strong{display:block;font:600 24px Fraunces,serif;color:#fff}
 .cta{display:inline-block;margin-top:18px;background:var(--coral);color:#fff;text-decoration:none;padding:12px 20px;border-radius:99px;font-weight:500;text-shadow:none}
+.lyric{display:block;margin:12px 0 0;padding:0;background:none;border:0;color:var(--gold,#d9b26a);font:italic 400 15px Fraunces,serif;text-align:left;cursor:pointer;text-shadow:inherit}
+.hero .lyric{text-align:center;margin-left:auto;margin-right:auto}
+.lyric:hover{text-decoration:underline;text-underline-offset:3px}
 .note{font-size:12px!important;color:var(--muted)!important;margin-top:10px;font-style:italic}
 .polaroid{position:fixed;width:min(200px,16vw);background:#fbf8f2;padding:8px 8px 30px;box-shadow:0 18px 50px rgba(0,0,0,.45);opacity:0;z-index:2;pointer-events:none;will-change:transform,opacity}
 .polaroid img,.polaroid video{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
@@ -151,17 +154,17 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 // fx/fy: where to keep the crop on a tall phone screen (0..1 across the photo). pan: sideways camera travel over the scene.
 const CH = [
   {img:'01-amanhecer', fx:.5, fy:.5, pan:[.05,0], side:'left', hero:true, k:'Setiba · Guarapari · ES', short:'Pousada Trancoso',
-   h:'Pousada Trancoso', tag:'O dia começa a poucos passos do mar', p:'Pousada e restaurante de família no litoral do Espírito Santo.'},
+   lyric:'Vem pro Trancoso, vem! Tira o pé do chão', h:'Pousada Trancoso', tag:'O dia começa a poucos passos do mar', p:'Pousada e restaurante de família no litoral do Espírito Santo.'},
   {img:'02-setiba', fx:.42, fy:.5, pan:[-.05,0], side:'right', k:'A praia', short:'Praia e piscina',
    cards:[['v-piscina','A piscina'],['v-cafe','Café da manhã'],['v-praia','Setiba vista do alto']],
-   h:'Praia, piscina e café da manhã', p:'Duas piscinas, área de lazer ao ar livre e café da manhã incluso. A praia de Setiba fica logo ali.'},
+   lyric:'O sol abriu lá em Setiba, o mar azul chamando pra brincar', h:'Praia, piscina e café da manhã', p:'Duas piscinas, área de lazer ao ar livre e café da manhã incluso. A praia de Setiba fica logo ali.'},
   {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['v-quadriciclo','Passeio de quadriciclo'],['v-dunas','Pelas dunas da restinga'],['ig-familia','Fim de semana em família']],
-   h:'Quadriciclo, lagoa e restinga', p:'Passeio de quadriciclo pela região do Parque Paulo César Vinha, onde a lagoa de água escura encontra o mar.',
+   lyric:'De quadriciclo pela restinga', h:'Quadriciclo, lagoa e restinga', p:'Passeio de quadriciclo pela região do Parque Paulo César Vinha, onde a lagoa de água escura encontra o mar.',
    price:[['R$ 400','Casal, com café'],['R$ 490','Casal + 1 filho']], note:'Fim de semana em família · outubro a dezembro, sexta a domingo'},
   // sweep -1: on a phone the crop starts on the Heineken (right) and glides to the beer glass (left)
   {img:'04-mesa-pousada', fx:.5, fy:.72, pan:[.03,-.02], sweep:-1, side:'left', k:'Restaurante Trancoso', short:'Moqueca e frutos do mar',
    cards:[['v-moqueca','Moqueca de cação capixaba'],['v-risoto','Risoto de camarão'],['v-cacao','Cação ao molho de camarão'],['v-almoco','Almoço à beira da piscina'],['fb-festival','Festival lagosta e caranguejo']],
-   h:'Moqueca, lagosta e caranguejo', p:'Moqueca capixaba de cação, moqueca de lagosta, risoto de camarão e o festival de caranguejo, servidos à beira da piscina no Restaurante Trancoso.',
+   lyric:'Caranguejo na mesa, caipirinha no bar', h:'Moqueca, lagosta e caranguejo', p:'Moqueca capixaba de cação, moqueca de lagosta, risoto de camarão e o festival de caranguejo, servidos à beira da piscina no Restaurante Trancoso.',
    note:'Preços dos anúncios antigos · confirmar com a pousada'},
   {img:'05-por-do-sol-setiba', fx:.5, fy:.5, pan:[-.04,0], side:'left', k:'Sexta-feira romântica', short:'Sexta romântica',
    cards:[['ig-romantica','Suíte decorada'],['v-jantar','Jantar à luz de velas'],['fb-hidro','Hidro à noite'],['fb-varanda','Petiscos na varanda']],
@@ -169,9 +172,9 @@ const CH = [
    price:[['R$ 350','Por casal']]},
   {img:'06-salao', fx:.45, fy:.55, pan:[.04,-.02], side:'right', k:'Noites temáticas', short:'Baile e karaokê',
    cards:[['fb-karaoke','Noite de karaokê'],['v-karaoke','Karaokê com animador'],['v-pista','Baile Flashback'],['v-cantor','Show ao vivo']],
-   h:'Baile Retrô, flashback e karaokê', p:'Noite de karaokê com entrada liberada, bailes de anos 60, 80 e 90 e shows ao vivo. Quem veio, aprovou.'},
+   lyric:'De noite tem karaokê, tem baile', h:'Baile Retrô, flashback e karaokê', p:'Noite de karaokê com entrada liberada, bailes de anos 60, 80 e 90 e shows ao vivo. Quem veio, aprovou.'},
   {img:'00-restinga', fx:.42, fy:.55, pan:[0,-.04], side:'bottom', k:'Réveillon 2027', short:'Réveillon', cards:[['v-fogos','Queima de fogos'],['v-ceia','Ceia da virada'],['ig-reveillon','Réveillon Guarapari']],
-   h:'Vire o ano com os pés na areia', p:'5 dias e 4 noites, show ao vivo, queima de fogos e mesa reservada para a virada.',
+   lyric:'E fogos no céu pra gente comemorar', h:'Vire o ano com os pés na areia', p:'5 dias e 4 noites, show ao vivo, queima de fogos e mesa reservada para a virada.',
    price:[['5x R$ 600','Até 4 pessoas'],['Café','Incluso']], cta:true},
 ];
 // Route lengths in screen-heights (sn-motion-html: scene 4.6 / connector 1.2; shorter here because phones swipe less)
@@ -260,6 +263,8 @@ const els=CH.map((c,i)=>{
   const t=document.createElement('article'); t.className='copy '+c.side+(c.hero?' hero':''); const H=i?'h2':'h1';
   t.innerHTML=(c.hero?'<div class="mark">T</div>':'')+`<p class="kicker">${c.hero?'':`<i>${String(i+1).padStart(2,'0')}</i>`}${c.k}</p><${H}>${c.h}</${H}>`+
     (c.tag?`<p class="tag">${c.tag}</p>`:'')+`<p>${c.p}</p>`+
+    // lines from our own song "Vem pro Trancoso" (Joel: show some lyrics here and there); tap to hear it
+    (c.lyric?`<button class="lyric" data-song="PT-012-B">♪ “${c.lyric}”</button>`:'')+
     (c.price?`<div class="price">${c.price.map(([a,b])=>`<div><strong>${a}</strong>${b}</div>`).join('')}</div>`:'')+
     (c.note?`<p class="note">${c.note}</p>`:'')+
     (c.cta?`<a class="cta" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar pelo WhatsApp</a>`:'');
@@ -461,6 +466,8 @@ MP.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; const d=b.dat
 // Mouse: hover ♪ shows the player, click ♪ = play/pause. Phone (no hover): tap ♪ only opens/closes the player, the
 // buttons inside do the rest, and it stays open until a tap outside (Joel: a tap that both toggles and pops up is confusing).
 const touch=matchMedia('(hover:none)').matches;
+document.querySelectorAll('.lyric').forEach(b=>b.onclick=()=>{ const i=SONGS.findIndex(x=>x[0]===b.dataset.song);
+  if(i<0) return; if(!(soundOn&&song.i===i)) pick(i); });
 document.querySelectorAll('[data-sound]').forEach(x=>{
   x.insertAdjacentHTML('beforeend','<i class="eq" aria-hidden="true"><b></b><b></b><b></b></i>');   // tiny bars: dance while music plays
   x.onmouseenter=()=>{ if(!touch) openMP(x) }; x.onmouseleave=()=>{ if(!touch) closeMP() };
