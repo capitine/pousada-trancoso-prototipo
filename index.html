@@ -39,8 +39,8 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 .price strong{display:block;font:600 24px Fraunces,serif;color:#fff}
 .cta{display:inline-block;margin-top:18px;background:var(--coral);color:#fff;text-decoration:none;padding:12px 20px;border-radius:99px;font-weight:500;text-shadow:none}
 .note{font-size:12px!important;color:var(--muted)!important;margin-top:10px;font-style:italic}
-.polaroid{position:fixed;width:min(180px,17vw);background:#fbf8f2;padding:8px 8px 28px;box-shadow:0 18px 50px rgba(0,0,0,.4);opacity:0;z-index:2;pointer-events:none}
-.polaroid img{width:100%;aspect-ratio:9/13;object-fit:cover;display:block}
+.polaroid{position:fixed;width:min(200px,16vw);background:#fbf8f2;padding:8px 8px 30px;box-shadow:0 18px 50px rgba(0,0,0,.45);opacity:0;z-index:2;pointer-events:none;will-change:transform,opacity}
+.polaroid img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
 .polaroid span{position:absolute;bottom:6px;left:0;right:0;text-align:center;font:400 13px Fraunces,serif;color:#6b5f55}
 /* chapter drawer: jump straight to a part without travelling through every scene */
 .drawer{position:fixed;inset:0;z-index:9;display:flex;justify-content:flex-end;visibility:hidden}
@@ -67,7 +67,7 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
   .copy.bottom .kicker,.copy.bottom .price{justify-content:flex-start}
   h1,h2{font-size:30px}.copy p{font-size:15px}
   .shade{background:linear-gradient(0deg,rgba(15,12,10,.85),rgba(15,12,10,.25) 55%,rgba(15,12,10,0))}
-  .polaroid{display:none}
+  .polaroid{width:38vw;padding:6px 6px 24px}.polaroid span{font-size:11px;bottom:4px}
   .bar{display:flex;position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:6;gap:8px;align-items:center;
     background:rgba(28,23,20,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:16px;padding:8px}
   .bar .pill{display:block;padding:10px 14px}
@@ -94,30 +94,39 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 const CH = [
   {img:'01-amanhecer', fx:.5, fy:.5, pan:[.05,0], side:'left', k:'Setiba · Guarapari', short:'Amanhecer',
    h:'O dia começa a poucos passos do mar', p:'Uma pousada de família no litoral do Espírito Santo. Acorde com o som das ondas e desça para a areia antes do café.'},
-  {img:'02-setiba', fx:.42, fy:.5, pan:[-.05,0], side:'right', k:'A praia', short:'Praia e piscina', pol:['ig-praia','Setiba vista do alto',[8,56],-5],
+  {img:'02-setiba', fx:.42, fy:.5, pan:[-.05,0], side:'right', k:'A praia', short:'Praia e piscina',
+   cards:[['fb-piscina','A piscina'],['fb-cafe','Café na beira da piscina'],['ig-praia','Setiba vista do alto']],
    h:'Praia, piscina e café da manhã', p:'Duas piscinas, área de lazer ao ar livre e café da manhã incluso. A praia de Setiba fica logo ali.'},
-  {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], side:'left', k:'Aventura', short:'Quadriciclo e lagoa', pol:['ig-familia','Fim de semana em família',[68,14],4],
+  {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['ig-familia','Fim de semana em família']],
    h:'Quadriciclo, lagoa e restinga', p:'Passeio de quadriciclo pela região do Parque Paulo César Vinha, onde a lagoa de água escura encontra o mar.',
    price:[['R$ 400','Casal, com café'],['R$ 490','Casal + 1 filho']], note:'Fim de semana em família · outubro a dezembro, sexta a domingo'},
-  {img:'04-mesa', fx:.45, fy:.6, pan:[.04,-.02], side:'right', k:'Restaurante', short:'Mesa farta',
-   h:'Dias de mesa farta', p:'Dias de carne, pratos especiais e frutos do mar no restaurante da pousada.',
-   note:'Exemplo: cardápio e dias a confirmar com a pousada'},
-  {img:'05-por-do-sol', fx:.6, fy:.5, pan:[-.04,0], side:'left', k:'Sexta-feira romântica', short:'Sexta romântica', pol:['ig-romantica','Suíte decorada',[64,48],-3],
+  {img:'04-mesa-pousada', fx:.5, fy:.72, pan:[.03,-.02], side:'left', k:'Restaurante Trancoso', short:'Lagosta e caranguejo',
+   cards:[['fb-moqueca','Moqueca de lagosta'],['fb-caranguejo','Caranguejo + moqueca'],['fb-festival','Festival lagosta e caranguejo']],
+   h:'Lagosta, caranguejo e moqueca', p:'Moqueca de lagosta, caranguejo e o festival de frutos do mar, servidos à beira da piscina no Restaurante Trancoso.',
+   note:'Preços dos anúncios antigos · confirmar com a pousada'},
+  {img:'05-por-do-sol', fx:.6, fy:.5, pan:[-.04,0], side:'left', k:'Sexta-feira romântica', short:'Sexta romântica',
+   cards:[['ig-romantica','Suíte decorada'],['fb-hidro','Hidro à noite'],['fb-varanda','Petiscos na varanda']],
    h:'Quando o sol se põe, a mesa é só de vocês', p:'Suíte decorada, jantar à luz de velas e café da manhã no dia seguinte.',
    price:[['R$ 350','Por casal']]},
-  {img:'06-noite', fx:.62, fy:.45, pan:[.05,.02], side:'right', k:'Noites temáticas', short:'Baile e karaokê', pol:['ig-baile','Baile Retrô',[9,14],-6], pol2:['ig-pista','Pista cheia',[22,50],5],
-   h:'Baile Retrô, flashback e karaokê', p:'Noites de anos 60, 80 e 90, karaokê e shows ao vivo. Quem veio, aprovou.'},
-  {img:'00-restinga', fx:.42, fy:.55, pan:[0,-.04], side:'bottom', k:'Réveillon 2027', short:'Réveillon', pol:['ig-reveillon','Réveillon Guarapari',[74,10],4],
+  {img:'06-noite', fx:.62, fy:.45, pan:[.05,.02], side:'right', k:'Noites temáticas', short:'Baile e karaokê',
+   cards:[['fb-karaoke','Noite de karaokê'],['ig-baile','Baile Retrô'],['ig-pista','Pista cheia']],
+   h:'Baile Retrô, flashback e karaokê', p:'Noite de karaokê com entrada liberada, bailes de anos 60, 80 e 90 e shows ao vivo. Quem veio, aprovou.'},
+  {img:'00-restinga', fx:.42, fy:.55, pan:[0,-.04], side:'bottom', k:'Réveillon 2027', short:'Réveillon', cards:[['ig-reveillon','Réveillon Guarapari']],
    h:'Vire o ano com os pés na areia', p:'5 dias e 4 noites, show ao vivo, queima de fogos e mesa reservada para a virada.',
    price:[['5x R$ 600','Até 4 pessoas'],['Café','Incluso']], cta:true},
 ];
 // Route lengths in screen-heights (sn-motion-html: scene 4.6 / connector 1.2; shorter here because phones swipe less)
-const SCENE=1.4, LINK=.9;   // Joel: "scroll a lot to move a little" at 2.8/1.6 — about 10 wheel clicks per chapter now
+// A chapter = text in (IN) → one stop per photo card that drops onto the screen (CARD each) → text + cards out (OUT).
+const IN=.55, CARD=.5, OUT=.7, LINK=.9, FADE=.15;
 const $=id=>document.getElementById(id);
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches && !location.search.includes('motion');
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)), ease=v=>(v=clamp(v),v*v*(3-2*v));
-let off=0; CH.forEach((c,i)=>{ c.start=off; off+=SCENE; c.end=off; if(i<CH.length-1) off+=LINK });
-const TOTAL=CH[CH.length-1].end-.5;
+const back=v=>(v=clamp(v),1+2.2*Math.pow(v-1,3)+1.2*Math.pow(v-1,2));   // lands with a small bounce, like a photo dropped on a table
+let off=0; const STOPS=[];
+CH.forEach((c,i)=>{ c.cards=c.cards||[]; c.start=off; c.len=IN+CARD*c.cards.length+OUT; c.end=off+c.len;
+  for(let k=0;k<=c.cards.length;k++) STOPS.push({p:c.start+IN+CARD*k, ch:i});
+  off=c.end; if(i<CH.length-1) off+=LINK });
+const TOTAL=CH[CH.length-1].end-.3;
 
 // ---- WebGL "3D photo": each photo + its depth map; the camera dollies and pans, near pixels move more than far ones
 const cv=$('gl'), gl=cv.getContext('webgl',{antialias:false,premultipliedAlpha:false});
@@ -174,7 +183,7 @@ function fitOf(c){                 // cover the screen with 14% spare so camera 
 function bind(c,unit){ gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D,c.t); gl.activeTexture(gl.TEXTURE0+unit+1); gl.bindTexture(gl.TEXTURE_2D,c.d) }
 function resize(){ const r=Math.min(devicePixelRatio||1,2); cv.width=Math.round(innerWidth*r); cv.height=Math.round(innerHeight*r);
   gl&&gl.viewport(0,0,cv.width,cv.height); dirty=true }
-addEventListener('resize',resize);
+addEventListener('resize',()=>{resize(); CH.forEach(c=>c.place&&c.place()); draw(pos)});
 
 // ---- copy, polaroids, chapter list
 const els=CH.map((c,i)=>{
@@ -184,10 +193,14 @@ const els=CH.map((c,i)=>{
     (c.note?`<p class="note">${c.note}</p>`:'')+
     (c.cta?`<a class="cta" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar pelo WhatsApp</a>`:'');
   document.body.appendChild(t);
-  const pols=[c.pol,c.pol2].filter(Boolean).map(([src,cap,[x,y],r])=>{
-    const p=document.createElement('figure'); p.className='polaroid'; p.style.left=x+'vw'; p.style.top=y+'vh'; p.dataset.r=r;
+  const pols=c.cards.map(([src,cap],k)=>{
+    const p=document.createElement('figure'); p.className='polaroid'; p.dataset.k=k; p.dataset.r=[-6,5,-3,7][k%4];
     p.innerHTML=`<img src="${PHOTO(src)}" alt="${cap}"><span>${cap}</span>`; document.body.appendChild(p); return p;
   });
+  c.place=()=>pols.forEach((p,k)=>{   // cards land on the side away from the text, fanned out like photos on a table
+    const phone=innerWidth<=760, x0=c.side==='left'?56:c.side==='right'?6:62;
+    p.style.left=(phone?4+k*29:x0+k*10)+'vw'; p.style.top=(phone?11+(k%2)*5:c.side==='bottom'?8+k*6:14+k*17)+'vh'; });
+  c.place();
   const b=document.createElement('button'); b.className='ch';
   b.innerHTML=`<img src="${PHOTO(c.img)}" alt=""><div><small>${String(i+1).padStart(2,'0')} · ${c.k}</small><span>${c.short}</span></div>`;
   b.onclick=()=>jump(i); $('list').appendChild(b);
@@ -199,23 +212,26 @@ let target=0, pos=0, dirty=true;
 // Snap: each chapter has a resting spot. Small scrolls nudge the scene and spring back; past SNAP it glides to the
 // next/previous chapter by itself. Scrolling the other way during the glide turns it around (Joel, 2026-10-22).
 // The line to cross is where the chapter's text card has fully faded (its scene edge), plus a little.
-const REST=CH.map(c=>c.start+SCENE*.5), PAST=.05, SNAP=SCENE*.5+PAST;
+// Stops inside a chapter (each card) need only a nudge; leaving a chapter needs the text card fully faded.
+const PAST=.05, NUDGE=.2, REST=CH.map(c=>STOPS.findIndex(s=>s.ch===CH.indexOf(c)));
 let base=0, idle=null, gliding=false;
+const down=b=>{ const s=STOPS[b], n=STOPS[b+1]; return !n?Infinity: n.ch===s.ch? s.p+NUDGE : CH[s.ch].end+PAST };
+const up=b=>{ const s=STOPS[b], q=STOPS[b-1]; return !q?-Infinity: q.ch===s.ch? s.p-NUDGE : CH[s.ch].start-PAST };
 function settle(){
   if(ty!==null) return;                               // finger still down
-  const c=CH[base]; let nb=base;
-  if(target>c.end+PAST) nb=Math.max(base+1,REST.findLastIndex(r=>r<=target));
-  else if(target<c.start-PAST) nb=Math.min(base-1,REST.findIndex(r=>r>=target));
-  base=clamp(nb,0,REST.length-1); target=REST[base]; gliding=true;
+  let nb=base;
+  while(target>down(nb)) nb++;
+  if(nb===base) while(target<up(nb)) nb--;            // only look back if we didn't move forward
+  base=nb; target=STOPS[base].p; gliding=true;
 }
-function step(dir){ base=clamp(base+dir,0,REST.length-1); target=REST[base]; gliding=true; }
+function step(dir){ base=clamp(base+dir,0,STOPS.length-1); target=STOPS[base].p; gliding=true; }
 const push=d=>{target=clamp(target+d,0,TOTAL); gliding=false; clearTimeout(idle); idle=setTimeout(settle,160)};
 const drawer=$('drawer'), isOpen=()=>drawer.classList.contains('open');
 document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>drawer.classList.add('open'));
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>drawer.classList.remove('open'));
 function jump(i){                      // quick fade, then land on the chapter — no travelling through every scene
   drawer.classList.remove('open'); $('flash').classList.add('on');
-  setTimeout(()=>{ base=i; target=pos=REST[i]; draw(pos); setTimeout(()=>$('flash').classList.remove('on'),120) },360);
+  setTimeout(()=>{ base=REST[i]; target=pos=STOPS[base].p; draw(pos); setTimeout(()=>$('flash').classList.remove('on'),120) },360);
 }
 addEventListener('wheel',e=>{ if(isOpen())return; e.preventDefault(); push(clamp(e.deltaY,-120,120)/100*.26)},{passive:false});   // ~3 wheel clicks fade the card out and start the glide
 let ty=null, vel=0, lt=0;
@@ -236,10 +252,10 @@ function render(p,time){
   if(!gl) return;
   // which photo pair is on screen, and how far the camera has travelled
   let i=CH.reduce((s,c,k)=>p>=c.start?k:s,0), a=CH[i], b=null, mixv=0, za, zb=0, pa, pb=[0,0];
-  const u=clamp((p-a.start)/SCENE);
-  za=.10*u; pa=[a.pan[0]*u,a.pan[1]*u];
+  const u=clamp((p-a.start)/a.len), dv=a.dive||.10;    // dive: how far the camera falls into this photo
+  za=dv*u; pa=[a.pan[0]*u,a.pan[1]*u];
   if(p>a.end&&CH[i+1]){ const l=ease((p-a.end)/LINK); b=CH[i+1]; mixv=l;
-    za=.10+.18*l; pa=[a.pan[0]*(1+l),a.pan[1]*(1+l)]; zb=-.10*(1-l); }
+    za=dv+(dv>.2?.3:.18)*l; pa=[a.pan[0]*(1+l),a.pan[1]*(1+l)]; zb=-.10*(1-l); }
   bind(a,0); bind(b||a,2);
   const fa=fitOf(a), fb=fitOf(b||a);
   gl.uniform4f(U.fA,...fa); gl.uniform4f(U.fB,...fb);
@@ -250,22 +266,27 @@ function render(p,time){
 }
 function draw(p){
   CH.forEach((c,i)=>{
-    const u=clamp((p-c.start)/SCENE), inside=p>=c.start-.001&&p<=c.end, last=i===CH.length-1;
-    const o=inside?Math.min(i?ease(u/.12):1, last?1:ease((1-u)/.12)):(last&&p>c.end?1:0);
+    const inside=p>=c.start-.001&&p<=c.end, last=i===CH.length-1;
+    const o=inside?Math.min(i?ease((p-c.start)/FADE):1, last?1:ease((c.end-p)/FADE)):(last&&p>c.end?1:0);
     const {t,pols}=els[i];
     t.style.opacity=o.toFixed(3); t.style.translate=reduce?'0':`0 ${((1-o)*14).toFixed(1)}px`;
     t.style.pointerEvents=o>.6?'auto':'none';
-    pols.forEach((q,k)=>{q.style.opacity=o.toFixed(3); q.style.transform=`rotate(${q.dataset.r}deg) translateY(${((1-o)*26+k*6).toFixed(1)}px)`});
+    pols.forEach((q,k)=>{                          // card k drops in on the way to stop k+1
+      const d=clamp((p-(c.start+IN+CARD*k+.04))/(CARD*.85)), e=reduce?ease(d):back(d), r=+q.dataset.r, s=k%2?1:-1;
+      q.style.opacity=(Math.min(1,d*5)*o).toFixed(3);
+      q.style.transform=`translateY(${((1-e)*-75).toFixed(2)}vh) rotate(${(r+s*28*(1-e)).toFixed(2)}deg) scale(${(1+.18*(1-e)).toFixed(3)})`;
+      q.style.boxShadow=`0 ${(6+30*(1-d)).toFixed(0)}px ${(18+50*(1-d)).toFixed(0)}px rgba(0,0,0,${(.55-.25*(1-d)).toFixed(2)})`;
+    });
   });
   const cur=CH.reduce((a,c,i)=>p>=c.start-LINK/2?i:a,0);
   if(cur!==active){ active=cur; const c=CH[cur], label=`${String(cur+1).padStart(2,'0')} — ${c.short}`;
     $('status').textContent=label; $('now').textContent=label; els.forEach((e,i)=>e.b.classList.toggle('on',i===cur)); }
   $('bar').style.transform=`scaleX(${(p/TOTAL).toFixed(4)})`;
-  $('hint').style.opacity=Math.abs(p-REST[0])>.1?0:1;
+  $('hint').style.opacity=Math.abs(p-STOPS[0].p)>.1?0:1;
   dirty=true;
 }
 resize();
-target=pos=REST[0];
+target=pos=STOPS[0].p;
 (function loop(ms){
   const d=target-pos;
   if(Math.abs(d)>.0004){ pos+=d*(gliding?.045:reduce?.15:.1); draw(pos); }   // the glide is slower, like a camera move
