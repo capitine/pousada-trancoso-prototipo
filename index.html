@@ -158,7 +158,8 @@ const CH = [
   {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['v-quadriciclo','Passeio de quadriciclo'],['v-dunas','Pelas dunas da restinga'],['ig-familia','Fim de semana em família']],
    h:'Quadriciclo, lagoa e restinga', p:'Passeio de quadriciclo pela região do Parque Paulo César Vinha, onde a lagoa de água escura encontra o mar.',
    price:[['R$ 400','Casal, com café'],['R$ 490','Casal + 1 filho']], note:'Fim de semana em família · outubro a dezembro, sexta a domingo'},
-  {img:'04-mesa-pousada', fx:.5, fy:.72, pan:[.03,-.02], side:'left', k:'Restaurante Trancoso', short:'Moqueca e frutos do mar',
+  // sweep -1: on a phone the crop starts on the Heineken (right) and glides to the beer glass (left)
+  {img:'04-mesa-pousada', fx:.5, fy:.72, pan:[.03,-.02], sweep:-1, side:'left', k:'Restaurante Trancoso', short:'Moqueca e frutos do mar',
    cards:[['v-moqueca','Moqueca de cação capixaba'],['v-risoto','Risoto de camarão'],['v-cacao','Cação ao molho de camarão'],['v-almoco','Almoço à beira da piscina'],['fb-festival','Festival lagosta e caranguejo']],
    h:'Moqueca, lagosta e caranguejo', p:'Moqueca capixaba de cação, moqueca de lagosta, risoto de camarão e o festival de caranguejo, servidos à beira da piscina no Restaurante Trancoso.',
    note:'Preços dos anúncios antigos · confirmar com a pousada'},
@@ -241,10 +242,13 @@ function tex(src,c,key){
   im.src=src; return t;
 }
 if(gl) CH.forEach(c=>{ c.t=tex(PHOTO(c.img),c,'t'); c.d=tex(DEPTH(c.img),c,'d'); });
-function fitOf(c){                 // cover the screen with 14% spare so camera moves never show an edge; keep the crop on fx/fy
+function fitOf(c,u=.5){            // cover the screen with 14% spare so camera moves never show an edge; keep the crop on fx/fy
   const sa=cv.width/cv.height, ia=c.aspect||1.5, M=1.14;
   let sx=1,sy=1; if(sa<ia) sx=sa/ia; else sy=ia/sa; sx/=M; sy/=M;
-  return [sx,sy,clamp(c.fx-.5,-(1-sx)/2+.02,(1-sx)/2-.02),clamp(c.fy-.5,-(1-sy)/2+.02,(1-sy)/2-.02)];
+  // Phone (tall screen) shows only a slice of a wide photo, so the crop glides sideways across it while you read
+  // and the cards drop (Joel: "see the Heineken, then the beer glass"). Wide screens already see the whole photo.
+  const sw=sa<1?(c.sweep??(CH.indexOf(c)%2?-1:1)):0;
+  return [sx,sy,clamp(c.fx-.5+sw*(u-.5)*(1-sx)*.8,-(1-sx)/2+.02,(1-sx)/2-.02),clamp(c.fy-.5,-(1-sy)/2+.02,(1-sy)/2-.02)];
 }
 function bind(c,unit){ gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D,c.t); gl.activeTexture(gl.TEXTURE0+unit+1); gl.bindTexture(gl.TEXTURE_2D,c.d) }
 function resize(){ const r=Math.min(devicePixelRatio||1,2); cv.width=Math.round(innerWidth*r); cv.height=Math.round(innerHeight*r);
@@ -492,7 +496,7 @@ function render(p,time){
   if(p>a.end&&CH[i+1]){ const l=ease((p-a.end)/LINK); b=CH[i+1]; mixv=l;
     za=dv+(dv>.2?.3:.18)*l; pa=[a.pan[0]*(1+l),a.pan[1]*(1+l)]; zb=-.10*(1-l); }
   bind(a,0); bind(b||a,2);
-  const fa=fitOf(a), fb=fitOf(b||a);
+  const fa=fitOf(a,u), fb=b?fitOf(b,0):fa;
   gl.uniform4f(U.fA,...fa); gl.uniform4f(U.fB,...fb);
   gl.uniform2f(U.pA,...pa); gl.uniform2f(U.pB,...pb); gl.uniform2f(U.res,cv.width,cv.height);
   // Reduce Motion on: keep a gentle half-strength move instead of none (none felt like a flipbook)
