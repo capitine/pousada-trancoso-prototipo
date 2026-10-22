@@ -117,7 +117,7 @@ const CH = [
   {img:'02-setiba', fx:.42, fy:.5, pan:[-.05,0], side:'right', k:'A praia', short:'Praia e piscina',
    cards:[['v-piscina','A piscina'],['v-cafe','Café da manhã'],['v-praia','Setiba vista do alto']],
    h:'Praia, piscina e café da manhã', p:'Duas piscinas, área de lazer ao ar livre e café da manhã incluso. A praia de Setiba fica logo ali.'},
-  {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['ig-familia','Fim de semana em família']],
+  {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, soft:.95, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['ig-familia','Fim de semana em família']],
    h:'Quadriciclo, lagoa e restinga', p:'Passeio de quadriciclo pela região do Parque Paulo César Vinha, onde a lagoa de água escura encontra o mar.',
    price:[['R$ 400','Casal, com café'],['R$ 490','Casal + 1 filho']], note:'Fim de semana em família · outubro a dezembro, sexta a domingo'},
   {img:'04-mesa-pousada', fx:.5, fy:.72, pan:[.03,-.02], side:'left', k:'Restaurante Trancoso', short:'Lagosta e caranguejo',
@@ -128,10 +128,10 @@ const CH = [
    cards:[['ig-romantica','Suíte decorada'],['fb-hidro','Hidro à noite'],['fb-varanda','Petiscos na varanda']],
    h:'Quando o sol se põe, a mesa é só de vocês', p:'Suíte decorada, jantar à luz de velas e café da manhã no dia seguinte.',
    price:[['R$ 350','Por casal']]},
-  {img:'06-salao', fx:.45, fy:.55, pan:[.04,-.02], side:'right', k:'Noites temáticas', short:'Baile e karaokê',
+  {img:'06-salao', soft:0, fx:.45, fy:.55, pan:[.04,-.02], side:'right', k:'Noites temáticas', short:'Baile e karaokê',
    cards:[['fb-karaoke','Noite de karaokê'],['v-pista','Baile Flashback'],['v-cantor','Show ao vivo'],['v-noite','Noite na varanda']],
    h:'Baile Retrô, flashback e karaokê', p:'Noite de karaokê com entrada liberada, bailes de anos 60, 80 e 90 e shows ao vivo. Quem veio, aprovou.'},
-  {img:'00-restinga', fx:.42, fy:.55, pan:[0,-.04], side:'bottom', k:'Réveillon 2027', short:'Réveillon', cards:[['ig-reveillon','Réveillon Guarapari']],
+  {img:'00-restinga', fx:.42, fy:.55, pan:[0,-.04], side:'bottom', k:'Réveillon 2027', short:'Réveillon', cards:[['v-fogos','Queima de fogos'],['v-ceia','Ceia da virada'],['ig-reveillon','Réveillon Guarapari']],
    h:'Vire o ano com os pés na areia', p:'5 dias e 4 noites, show ao vivo, queima de fogos e mesa reservada para a virada.',
    price:[['5x R$ 600','Até 4 pessoas'],['Café','Incluso']], cta:true},
 ];
@@ -152,27 +152,35 @@ const TOTAL=CH[CH.length-1].end-.3;
 const cv=$('gl'), gl=cv.getContext('webgl',{antialias:false,premultipliedAlpha:false});
 const VS=`attribute vec2 p;varying vec2 v;void main(){v=p*.5+.5;gl_Position=vec4(p,0,1);}`;
 const FS=`precision highp float;varying vec2 v;
-uniform sampler2D tA,dA,tB,dB;uniform vec4 fA,fB;uniform vec2 pA,pB,res;uniform float zA,zB,mixv,time;
+uniform sampler2D tA,dA,tB,dB;uniform vec4 fA,fB;uniform vec2 pA,pB,res;uniform float zA,zB,mixv,time,sA,sB;
 vec2 fit(vec2 q,vec4 f){return vec2(.5)+q*f.xy+f.zw;}
-vec3 scene(sampler2D t,sampler2D d,vec4 f,vec2 uv,float z,vec2 pan){
+vec3 scene(sampler2D t,sampler2D d,vec4 f,vec2 uv,float z,vec2 pan,float soft){
   // one lookup into a heavily blurred depth map: smooth bending, no ghost copies on thin branches
   // (the 4-step search tore branches apart — Joel's screenshots, 2026-10-22)
   vec2 q=uv-.5; float dep=texture2D(d,fit(q,f)).r;
   vec2 s=q/(1.+z*(.55+.45*dep))-pan*(dep-.35)*.6;
-  return texture2D(t,fit(s,f)).rgb;}
+  vec2 c=fit(s,f); vec3 col=texture2D(t,c).rgb;
+  // soft focus for busy, very sharp photos (Joel: "too sharp, pulls attention from the text"): small 8-tap disc blur
+  if(soft>0.){ float r=soft*.003; vec3 acc=col;          // two rings (16 taps) so the blur is smooth, not dotted
+    for(int k=0;k<8;k++){ float a=float(k)*.785398; acc+=texture2D(t,c+vec2(cos(a),sin(a))*r).rgb;
+      acc+=texture2D(t,c+vec2(cos(a+.3927),sin(a+.3927))*r*.5).rgb; }
+    col=mix(col,acc/17.,min(1.,soft*1.5)); col=mix(vec3(dot(col,vec3(.299,.587,.114))),col,1.-.15*soft); }
+  return col;}
 float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
   return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1)),f.x),f.y);}
 float fbm(vec2 p){return n(p)*.55+n(p*2.1)*.28+n(p*4.3)*.17;}
 void main(){
   vec2 uv=vec2(v.x,1.-v.y), sway=vec2(sin(time*.31),cos(time*.23))*.004;
-  vec3 a=scene(tA,dA,fA,uv,zA,pA+sway);
-  if(mixv<=0.){gl_FragColor=vec4(a,1);return;}
-  vec3 b=scene(tB,dB,fB,uv,zB,pB+sway);
+  // gentle dark edges on every photo, so the eye settles toward the middle and the text
+  vec2 vq=(v-.5)*vec2(res.x/res.y,1.); float vig=mix(1.,.62,smoothstep(.35,1.05,length(vq)));
+  vec3 a=scene(tA,dA,fA,uv,zA,pA+sway,sA);
+  if(mixv<=0.){gl_FragColor=vec4(a*vig,1);return;}
+  vec3 b=scene(tB,dB,fB,uv,zB,pB+sway,sB);
   // ink-wash dissolve: a soft cloudy front sweeps through; far parts of the next photo appear first
   float db=texture2D(dB,fit(uv-.5,fB)).r, w=fbm(uv*vec2(res.x/res.y,1.)*2.6+time*.03)*.75+(1.-db)*.25;
   float m=smoothstep(w-.16,w+.16,mixv*1.35-.17), haze=(1.-abs(m*2.-1.))*.55*sin(3.1416*mixv);
-  gl_FragColor=vec4(mix(mix(a,b,m),vec3(.96,.93,.87),haze),1);}`;
+  gl_FragColor=vec4(mix(mix(a,b,m)*vig,vec3(.96,.93,.87),haze),1);}`;
 function sh(t,s){const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);
   if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(o);return o}
 let prog, U={};
@@ -181,7 +189,7 @@ if(gl){
   gl.linkProgram(prog); gl.useProgram(prog);
   gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
   const loc=gl.getAttribLocation(prog,'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
-  ['tA','dA','tB','dB','fA','fB','pA','pB','res','zA','zB','mixv','time'].forEach(k=>U[k]=gl.getUniformLocation(prog,k));
+  ['tA','dA','tB','dB','fA','fB','pA','pB','res','zA','zB','mixv','time','sA','sB'].forEach(k=>U[k]=gl.getUniformLocation(prog,k));
   [['tA',0],['dA',1],['tB',2],['dB',3]].forEach(([k,u])=>gl.uniform1i(U[k],u));
 }
 const PHOTO=n=>(window.IMG&&IMG[n])||`img/${n}.jpg`, DEPTH=n=>(window.DEP&&DEP[n])||`depth/${n}.jpg`;
@@ -319,6 +327,7 @@ function render(p,time){
   gl.uniform4f(U.fA,...fa); gl.uniform4f(U.fB,...fb);
   gl.uniform2f(U.pA,...pa); gl.uniform2f(U.pB,...pb); gl.uniform2f(U.res,cv.width,cv.height);
   // Reduce Motion on: keep a gentle half-strength move instead of none (none felt like a flipbook)
+  gl.uniform1f(U.sA,a.soft??.25); gl.uniform1f(U.sB,(b||a).soft??.25);   // default: a touch soft; per chapter 'soft' overrides
   gl.uniform1f(U.zA,reduce?za*.5:za); gl.uniform1f(U.zB,reduce?zb*.5:zb); gl.uniform1f(U.mixv,mixv); gl.uniform1f(U.time,reduce?0:time);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 }
