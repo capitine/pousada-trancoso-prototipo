@@ -37,6 +37,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 .pill{border:1px solid rgba(246,239,226,.55);background:rgba(20,17,15,.2);padding:8px 15px;border-radius:99px;text-decoration:none;color:var(--paper);letter-spacing:.14em;text-transform:uppercase;font-size:12px}
 .pill.solid{background:var(--coral);border-color:var(--coral)}
 .pill[aria-pressed="true"]{background:var(--paper);color:var(--night)}
+/* tiny equalizer on the ♪ button: flat when silent, dancing while music plays */
+.eq{display:inline-flex;align-items:flex-end;gap:2px;height:10px;margin-left:6px;vertical-align:-1px}
+.eq b{width:2px;height:4px;background:currentColor;border-radius:1px}.eq b:nth-child(2){height:7px}   /* still bars, not "..." */
+[aria-pressed="true"] .eq b{animation:eq .9s ease-in-out infinite alternate}
+[aria-pressed="true"] .eq b:nth-child(2){animation-delay:-.4s}[aria-pressed="true"] .eq b:nth-child(3){animation-delay:-.7s}
+@keyframes eq{from{height:2px}to{height:10px}}
+@media (prefers-reduced-motion:reduce){[aria-pressed="true"] .eq b{animation:none;height:8px}}
 .progress{position:fixed;left:0;right:0;top:0;height:2px;z-index:7}.progress i{display:block;height:100%;background:var(--coral);transform-origin:0 50%;transform:scaleX(0)}
 .copy{position:fixed;top:50%;width:min(420px,38vw);opacity:0;z-index:3;transform:translateY(-50%);text-shadow:0 1px 3px rgba(0,0,0,.55),0 1px 18px rgba(0,0,0,.6);pointer-events:none}
 /* soft edge-free glow behind each text block so busy photos (trees, houses) don't fight the letters */
@@ -320,7 +327,7 @@ function jump(i){                      // quick fade, then land on the chapter �
 // scroll keeps stepping, one stop per cooldown, so fast readers still move fast.
 const WHEEL_KICK=40, COOL=350;   // 650 felt like it blocked fast scrolling (Joel)
 let acc=0, accT=null, lockUntil=0, lastDir=0;
-addEventListener('wheel',e=>{ if(isOpen())return; e.preventDefault();
+addEventListener('wheel',e=>{ if(isOpen()||e.target.closest('.mp'))return; e.preventDefault();   // the song list scrolls itself
   acc+=e.deltaY*(e.deltaMode===1?33:1); clearTimeout(accT); accT=setTimeout(()=>{acc=0; if(!gliding) target=STOPS[base].p},180);
   const dir=Math.sign(acc), now=performance.now();
   if(Math.abs(acc)<WHEEL_KICK){ if(!gliding) target=STOPS[base].p+clamp(acc/WHEEL_KICK,-1,1)*.05; return }   // tiny lean = "I felt that"
@@ -329,7 +336,7 @@ addEventListener('wheel',e=>{ if(isOpen())return; e.preventDefault();
   lastDir=dir; lockUntil=now+COOL; step(dir);
 },{passive:false});
 let ty=null, vel=0, lt=0;
-addEventListener('touchstart',e=>{ if(isOpen()||e.target.closest('.bar,a,button'))return; ty=e.touches[0].clientY; vel=0; lt=performance.now()},{passive:true});
+addEventListener('touchstart',e=>{ if(isOpen()||e.target.closest('.bar,a,button,.mp'))return; ty=e.touches[0].clientY; vel=0; lt=performance.now()},{passive:true});
 addEventListener('touchmove',e=>{ if(ty===null)return; e.preventDefault();
   const y=e.touches[0].clientY, d=(ty-y)/innerHeight*1.8, now=performance.now();
   vel=d/Math.max(1,now-lt)*16; lt=now; ty=y; push(d)},{passive:false});
@@ -406,11 +413,16 @@ MP.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; const d=b.dat
   if(d==='list'){ const on=MP.classList.toggle('list'); b.setAttribute('aria-expanded',on); openMP(mpBtn); }
   else if(b.dataset.i) pick(+b.dataset.i);
   else if(d==='0') sound(!soundOn); else pick(song.i+(+d));
-  showSong(); if(matchMedia('(hover:none)').matches) closeMP(MP.classList.contains('list')?9000:4000); };
+  showSong(); };
+// Mouse: hover ♪ shows the player, click ♪ = play/pause. Phone (no hover): tap ♪ only opens/closes the player, the
+// buttons inside do the rest, and it stays open until a tap outside (Joel: a tap that both toggles and pops up is confusing).
+const touch=matchMedia('(hover:none)').matches;
 document.querySelectorAll('[data-sound]').forEach(x=>{
-  x.onmouseenter=()=>openMP(x); x.onmouseleave=()=>closeMP();
-  x.onclick=()=>{ sound(!soundOn); openMP(x); if(matchMedia('(hover:none)').matches) closeMP(4000); };
+  x.insertAdjacentHTML('beforeend','<i class="eq" aria-hidden="true"><b></b><b></b><b></b></i>');   // tiny bars: dance while music plays
+  x.onmouseenter=()=>{ if(!touch) openMP(x) }; x.onmouseleave=()=>{ if(!touch) closeMP() };
+  x.onclick=()=>{ if(!touch){ sound(!soundOn); openMP(x); } else if(MP.classList.contains('on')&&mpBtn===x) MP.classList.remove('on'); else openMP(x); };
 });
+addEventListener('pointerdown',e=>{ if(touch&&MP.classList.contains('on')&&!e.target.closest('.mp,[data-sound]')) MP.classList.remove('on'); });
 // beach life, at random times so it never repeats the same way: gulls now and then, kids far away
 const LIFE=[['gaivota-1',.35],['gaivota-2',.32],['criancas-1',.28],['criancas-2',.26],['criancas-3',.28],['criancas-4',.26],['criancas-c1',.3],['criancas-c2',.3],['criancas-c3',.3]];
 async function lifeOnce(){
