@@ -21,6 +21,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .status{opacity:.85}
 .pill{border:1px solid rgba(246,239,226,.55);background:rgba(20,17,15,.2);padding:8px 15px;border-radius:99px;text-decoration:none;color:var(--paper);letter-spacing:.14em;text-transform:uppercase;font-size:12px}
 .pill.solid{background:var(--coral);border-color:var(--coral)}
+.pill[aria-pressed="true"]{background:var(--paper);color:var(--night)}
 .progress{position:fixed;left:0;right:0;top:0;height:2px;z-index:7}.progress i{display:block;height:100%;background:var(--coral);transform-origin:0 50%;transform:scaleX(0)}
 .copy{position:fixed;top:50%;width:min(420px,38vw);opacity:0;z-index:3;transform:translateY(-50%);text-shadow:0 1px 3px rgba(0,0,0,.55),0 1px 18px rgba(0,0,0,.6);pointer-events:none}
 /* soft edge-free glow behind each text block so busy photos (trees, houses) don't fight the letters */
@@ -81,10 +82,10 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 <div class="shade"></div>
 <div class="flash" id="flash"></div>
 <header class="top"><b>Pousada Trancoso</b><span class="status" id="status"></span><span class="status" style="opacity:.55">Protótipo</span>
-  <button class="pill" data-open>Capítulos</button><a class="pill solid" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar</a></header>
+  <button class="pill" data-sound aria-pressed="false">♪ Som</button><button class="pill" data-open>Capítulos</button><a class="pill solid" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar</a></header>
 <div class="progress"><i id="bar"></i></div>
 <div class="hint" id="hint">Deslize para descer<i></i></div>
-<div class="bar"><button class="pill" data-open>☰ Capítulos</button><span class="now" id="now"></span><a class="pill solid" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar</a></div>
+<div class="bar"><button class="pill" data-sound aria-pressed="false" aria-label="Som">♪</button><button class="pill" data-open>☰ Capítulos</button><span class="now" id="now"></span><a class="pill solid" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar</a></div>
 <div class="drawer" id="drawer"><div class="bg" data-close></div>
   <nav aria-label="Capítulos"><header>Capítulos<button data-close aria-label="Fechar">×</button></header><div id="list"></div>
   <a class="cta book" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar pelo WhatsApp</a></nav></div>
@@ -104,7 +105,7 @@ const CH = [
    cards:[['fb-moqueca','Moqueca de lagosta'],['fb-caranguejo','Caranguejo + moqueca'],['fb-festival','Festival lagosta e caranguejo']],
    h:'Lagosta, caranguejo e moqueca', p:'Moqueca de lagosta, caranguejo e o festival de frutos do mar, servidos à beira da piscina no Restaurante Trancoso.',
    note:'Preços dos anúncios antigos · confirmar com a pousada'},
-  {img:'05-por-do-sol', fx:.6, fy:.5, pan:[-.04,0], side:'left', k:'Sexta-feira romântica', short:'Sexta romântica',
+  {img:'05-por-do-sol-setiba', fx:.5, fy:.5, pan:[-.04,0], side:'left', k:'Sexta-feira romântica', short:'Sexta romântica',
    cards:[['ig-romantica','Suíte decorada'],['fb-hidro','Hidro à noite'],['fb-varanda','Petiscos na varanda']],
    h:'Quando o sol se põe, a mesa é só de vocês', p:'Suíte decorada, jantar à luz de velas e café da manhã no dia seguinte.',
    price:[['R$ 350','Por casal']]},
@@ -246,6 +247,22 @@ addEventListener('keydown',e=>{
   if(['ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();step(1)}
   if(['ArrowUp','PageUp'].includes(e.key)){e.preventDefault();step(-1)}
 });
+
+// ---- sound: soft waves (public-domain recording) + the Suno song once Joel picks one (audio/musica.mp3). Off until tapped.
+// ponytail: plain <audio loop>; mp3 loops can click a little at the seam — switch to Web Audio if anyone hears it.
+const AUD=(n,v)=>{const a=new Audio((window.AUDIO&&AUDIO[n])||`audio/${n}.mp3`); a.loop=true; a.volume=0; a.max=v; a.onerror=()=>a.dead=true; return a};
+const tracks=[AUD('ondas',.35),AUD('musica',.45)];
+let soundOn=false, fadeT=null;
+function sound(on){
+  soundOn=on; document.querySelectorAll('[data-sound]').forEach(b=>b.setAttribute('aria-pressed',on));
+  clearInterval(fadeT);
+  if(on) tracks.forEach(a=>!a.dead&&a.play().catch(()=>{}));
+  fadeT=setInterval(()=>{ let busy=false;
+    tracks.forEach(a=>{ const goal=on?a.max:0; a.volume=clamp(a.volume+(goal>a.volume?.03:-.05),0,1);
+      if(Math.abs(a.volume-goal)>.03) busy=true; else a.volume=goal; if(!on&&a.volume===0) a.pause(); });
+    if(!busy) clearInterval(fadeT); },60);
+}
+document.querySelectorAll('[data-sound]').forEach(b=>b.onclick=()=>sound(!soundOn));
 
 let active=-1;
 function render(p,time){
