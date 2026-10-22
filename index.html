@@ -117,7 +117,7 @@ const CH = [
   {img:'02-setiba', fx:.42, fy:.5, pan:[-.05,0], side:'right', k:'A praia', short:'Praia e piscina',
    cards:[['v-piscina','A piscina'],['v-cafe','Café da manhã'],['v-praia','Setiba vista do alto']],
    h:'Praia, piscina e café da manhã', p:'Duas piscinas, área de lazer ao ar livre e café da manhã incluso. A praia de Setiba fica logo ali.'},
-  {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, soft:.95, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['ig-familia','Fim de semana em família']],
+  {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['ig-familia','Fim de semana em família']],
    h:'Quadriciclo, lagoa e restinga', p:'Passeio de quadriciclo pela região do Parque Paulo César Vinha, onde a lagoa de água escura encontra o mar.',
    price:[['R$ 400','Casal, com café'],['R$ 490','Casal + 1 filho']], note:'Fim de semana em família · outubro a dezembro, sexta a domingo'},
   {img:'04-mesa-pousada', fx:.5, fy:.72, pan:[.03,-.02], side:'left', k:'Restaurante Trancoso', short:'Lagosta e caranguejo',
@@ -128,7 +128,7 @@ const CH = [
    cards:[['ig-romantica','Suíte decorada'],['fb-hidro','Hidro à noite'],['fb-varanda','Petiscos na varanda']],
    h:'Quando o sol se põe, a mesa é só de vocês', p:'Suíte decorada, jantar à luz de velas e café da manhã no dia seguinte.',
    price:[['R$ 350','Por casal']]},
-  {img:'06-salao', soft:0, fx:.45, fy:.55, pan:[.04,-.02], side:'right', k:'Noites temáticas', short:'Baile e karaokê',
+  {img:'06-salao', fx:.45, fy:.55, pan:[.04,-.02], side:'right', k:'Noites temáticas', short:'Baile e karaokê',
    cards:[['fb-karaoke','Noite de karaokê'],['v-pista','Baile Flashback'],['v-cantor','Show ao vivo'],['v-noite','Noite na varanda']],
    h:'Baile Retrô, flashback e karaokê', p:'Noite de karaokê com entrada liberada, bailes de anos 60, 80 e 90 e shows ao vivo. Quem veio, aprovou.'},
   {img:'00-restinga', fx:.42, fy:.55, pan:[0,-.04], side:'bottom', k:'Réveillon 2027', short:'Réveillon', cards:[['v-fogos','Queima de fogos'],['v-ceia','Ceia da virada'],['ig-reveillon','Réveillon Guarapari']],
@@ -267,7 +267,7 @@ function jump(i){                      // quick fade, then land on the chapter �
 // Mouse wheel = intent, not distance (Joel: "had to scroll hard to make it snap"): one small scroll glides to the next stop,
 // then a short cooldown swallows the rest of that flick so cards don't skip. Reversing works at once; holding the
 // scroll keeps stepping, one stop per cooldown, so fast readers still move fast.
-const WHEEL_KICK=40, COOL=650;
+const WHEEL_KICK=40, COOL=350;   // 650 felt like it blocked fast scrolling (Joel)
 let acc=0, accT=null, lockUntil=0, lastDir=0;
 addEventListener('wheel',e=>{ if(isOpen())return; e.preventDefault();
   acc+=e.deltaY*(e.deltaMode===1?33:1); clearTimeout(accT); accT=setTimeout(()=>{acc=0; if(!gliding) target=STOPS[base].p},180);
@@ -327,7 +327,7 @@ function render(p,time){
   gl.uniform4f(U.fA,...fa); gl.uniform4f(U.fB,...fb);
   gl.uniform2f(U.pA,...pa); gl.uniform2f(U.pB,...pb); gl.uniform2f(U.res,cv.width,cv.height);
   // Reduce Motion on: keep a gentle half-strength move instead of none (none felt like a flipbook)
-  gl.uniform1f(U.sA,a.soft??.25); gl.uniform1f(U.sB,(b||a).soft??.25);   // default: a touch soft; per chapter 'soft' overrides
+  gl.uniform1f(U.sA,a.soft||0); gl.uniform1f(U.sB,(b||a).soft||0);   // soft focus off: the blur smeared the aerial photo (Joel). Vignette stays.
   gl.uniform1f(U.zA,reduce?za*.5:za); gl.uniform1f(U.zB,reduce?zb*.5:zb); gl.uniform1f(U.mixv,mixv); gl.uniform1f(U.time,reduce?0:time);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 }
