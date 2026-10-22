@@ -301,8 +301,7 @@ const BUF={}, BED={ondas:{}, musica:{}};
 async function load(n){
   if(n in BUF) return BUF[n];
   BUF[n]=null;
-  const f=n==='musica'&&/take=b/.test(location.search)?'musica-b':n;   // ?take=b plays Suno take B (PT-001) instead of A
-  try{ const r=await fetch((window.AUDIO&&AUDIO[f])||`audio/${f}.mp3`); if(r.ok) BUF[n]=await ctx.decodeAudioData(await r.arrayBuffer()); }catch(e){}
+  try{ const r=await fetch((window.AUDIO&&AUDIO[n])||`audio/${n}.mp3`); if(r.ok) BUF[n]=await ctx.decodeAudioData(await r.arrayBuffer()); }catch(e){}
   return BUF[n];
 }
 function level(n,v,t=1.2){ const g=BED[n].gain.gain, now=ctx.currentTime; g.cancelScheduledValues(now); g.setValueAtTime(g.value,now); g.linearRampToValueAtTime(v,now+t); }
