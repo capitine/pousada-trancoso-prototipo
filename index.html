@@ -65,10 +65,10 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 .polaroid.live{pointer-events:auto;cursor:zoom-in}
 .polaroid.live:hover{scale:1.08;translate:0 -10px;rotate:calc(var(--r)*-.5deg);z-index:3}
 .polaroid.gone{visibility:hidden}
-.zoom{position:fixed;inset:0;z-index:20;background:rgba(15,12,10,.62);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;transition:opacity .45s;cursor:zoom-out}
-.zoom.on{opacity:1}
-.zoom .polaroid{opacity:1;pointer-events:auto;cursor:auto;scale:none;translate:none;rotate:none;padding:12px 12px 46px;transition:transform .55s cubic-bezier(.2,.85,.25,1)}
-.zoom .polaroid span{font-size:18px;bottom:12px}
+.zoom{position:fixed;inset:0;z-index:20;cursor:zoom-out}
+.zbg{position:absolute;inset:0;background:rgba(15,12,10,.62);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;transition:opacity .45s}
+.zoom.on .zbg{opacity:1}
+.zoom .polaroid{pointer-events:auto;cursor:auto;scale:none;translate:none;rotate:none;will-change:auto;transition:transform .55s cubic-bezier(.2,.85,.25,1)}
 /* chapter drawer: jump straight to a part without travelling through every scene */
 .drawer{position:fixed;inset:0;z-index:9;display:flex;justify-content:flex-end;visibility:hidden}
 .drawer.open{visibility:visible}
@@ -135,7 +135,7 @@ const CH = [
   {img:'02-setiba', fx:.42, fy:.5, pan:[-.05,0], side:'right', k:'A praia', short:'Praia e piscina',
    cards:[['v-piscina','A piscina'],['v-cafe','Café da manhã'],['v-praia','Setiba vista do alto']],
    h:'Praia, piscina e café da manhã', p:'Duas piscinas, área de lazer ao ar livre e café da manhã incluso. A praia de Setiba fica logo ali.'},
-  {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['v-quadriciclo','Passeio de quadriciclo'],['ig-familia','Fim de semana em família']],
+  {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['v-quadriciclo','Passeio de quadriciclo'],['v-dunas','Pelas dunas da restinga'],['ig-familia','Fim de semana em família']],
    h:'Quadriciclo, lagoa e restinga', p:'Passeio de quadriciclo pela região do Parque Paulo César Vinha, onde a lagoa de água escura encontra o mar.',
    price:[['R$ 400','Casal, com café'],['R$ 490','Casal + 1 filho']], note:'Fim de semana em família · outubro a dezembro, sexta a domingo'},
   {img:'04-mesa-pousada', fx:.5, fy:.72, pan:[.03,-.02], side:'left', k:'Restaurante Trancoso', short:'Moqueca e frutos do mar',
@@ -280,23 +280,27 @@ const push=d=>{target=clamp(target+d,0,TOTAL); gliding=false; clearTimeout(idle)
 const drawer=$('drawer');
 // Zoomed card: a copy grows from the small card to ~70% of the screen height; click outside (or Esc) sends it back.
 let zoomed=null;
+// The copy is the small card itself, scaled up in place: on close it shrinks back onto the exact same spot and
+// angle, then swaps for the original in the same frame (Joel saw it fade out and pop back in).
 function openZoom(p){
   if(zoomed) return;
-  const r=p.getBoundingClientRect(), z=document.createElement('div'); z.className='zoom';
-  const c=p.cloneNode(true); c.className='polaroid'; c.removeAttribute('style'); c.onclick=e=>e.stopPropagation();
+  const z=document.createElement('div'); z.className='zoom'; z.innerHTML='<div class="zbg"></div>';
+  const c=p.cloneNode(true); c.className='polaroid'; c.onclick=e=>e.stopPropagation();
+  c.style.opacity=1; c.style.transition='none';
+  const rest=`translate(0,0) rotate(${p.dataset.r}deg) scale(1)`; c.style.transform=rest;
   z.appendChild(c); document.body.appendChild(z);
-  const W=Math.min(innerHeight*.55,innerWidth*.86); c.style.width=W+'px';
-  c.style.left=(innerWidth-W)/2+'px'; c.style.top=(innerHeight-c.offsetHeight)/2+'px';
-  const from=`translate(${r.left+r.width/2-innerWidth/2}px,${r.top+r.height/2-innerHeight/2}px) rotate(${p.dataset.r}deg) scale(${p.offsetWidth/W})`;
-  c.style.transition='none'; c.style.transform=from; c.offsetHeight; c.style.transition=''; c.style.transform='none';
+  const w=p.offsetWidth, h=p.offsetHeight, k=Math.min(innerHeight*.74/h,innerWidth*.86/w);
+  const big=`translate(${innerWidth/2-p.offsetLeft-w/2}px,${innerHeight/2-p.offsetTop-h/2}px) rotate(0deg) scale(${k})`;
+  c.offsetHeight; c.style.transition=''; c.style.transform=big;
   const v=p.querySelector('video'), cv=c.querySelector('video'); if(cv){ cv.currentTime=v.currentTime; cv.play().catch(()=>{}); }
-  p.classList.add('gone'); z.classList.add('on'); zoomed={p,z,c,from};
+  p.classList.add('gone'); requestAnimationFrame(()=>z.classList.add('on')); zoomed={p,z,c,rest};
   z.onclick=closeZoom;
 }
 function closeZoom(){
-  if(!zoomed) return; const {p,z,c,from}=zoomed; zoomed=null;
-  c.style.transform=from; z.classList.remove('on');
-  setTimeout(()=>{ p.classList.remove('gone'); z.remove(); },500);
+  if(!zoomed) return; const {p,z,c,rest}=zoomed; zoomed=null;
+  z.classList.remove('on'); c.style.transform=rest;
+  const done=()=>{ if(!z.isConnected) return; p.classList.remove('gone'); z.remove(); };
+  c.addEventListener('transitionend',e=>{ if(e.propertyName==='transform') done() }); setTimeout(done,700);
 }
 const isOpen=()=>drawer.classList.contains('open')||!!zoomed;
 document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>drawer.classList.add('open'));
@@ -341,7 +345,8 @@ const MIX={ondas:.17, vida:1, musica:.3};   // the three levels Joel tunes by ea
 const SONGS=[['PT-007-A','Roda em Setiba · samba de roda'],['PT-007-B','Roda em Setiba · samba de roda II'],
   ['PT-006-A','Maré de Setiba · bossa nova'],['PT-006-B','Maré de Setiba · bossa nova II'],
   ['PT-009-A','Ijexá do Entardecer'],['PT-009-B','Ijexá do Entardecer II'],
-  ['PT-008-A','Baião da Varanda'],['PT-008-B','Baião da Varanda II']];
+  ['PT-008-A','Baião da Varanda'],['PT-008-B','Baião da Varanda II'],
+  ['PT-001b-A','Maré de Setiba · violão'],['PT-001b-B','Maré de Setiba · violão II']];
 let ctx=null, soundOn=false, lifeT=null, stopT=null;
 const BUF={}, BED={ondas:{}, musica:{}};
 const song={i:0, src:null, at:0, off:0};        // current track, when it started, where it was paused
