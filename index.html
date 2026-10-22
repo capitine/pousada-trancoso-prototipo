@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--paper:#f6efe2;--muted:#e6dccb;--coral:#e0684b;--night:#14110f}
+:root{--paper:#f6efe2;--muted:#e6dccb;--coral:#e0684b;--night:#14110f;--gold:#d9b46a}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%;overflow:hidden;background:var(--night);color:var(--paper);font:400 16px/1.6 Inter,system-ui,sans-serif}
 button{font:inherit;color:inherit;cursor:pointer}
@@ -17,7 +17,22 @@ button{font:inherit;color:inherit;cursor:pointer}
 .flash{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0;background:#f4ecde;transition:opacity .35s}
 .flash.on{opacity:1}
 .top{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:18px;padding:18px 28px;z-index:6;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
-.top b{font:600 19px Fraunces,serif;letter-spacing:.01em;text-transform:none;margin-right:auto}
+.top b{font:600 19px Fraunces,serif;letter-spacing:.01em;text-transform:none;margin-right:auto;display:flex;align-items:center;gap:10px}
+/* brand mark: gold ring with a serif T, after their own round "T · Trancoso Pousada" logo */
+.mark{--s:34px;width:var(--s);height:var(--s);border-radius:50%;border:1.5px solid var(--gold);display:grid;place-items:center;
+  font:600 calc(var(--s)*.52)/1 Fraunces,serif;color:var(--gold);flex:none}
+.hero{text-align:center;left:50%!important;right:auto!important;transform:translate(-50%,-50%)!important;width:min(820px,90vw)!important}
+.hero .mark{--s:88px;margin:0 auto 18px;box-shadow:0 0 40px rgba(217,180,106,.25)}
+.hero h1{font-size:clamp(54px,8.5vw,128px);line-height:.95;margin:8px 0 10px;letter-spacing:-.01em}
+.hero .kicker{justify-content:center;color:var(--gold)}.hero .kicker::after{display:none}
+.hero .tag{font:400 italic clamp(18px,2vw,26px) Fraunces,serif;color:#f6efe2;margin-bottom:10px}
+.hero p{max-width:520px;margin:0 auto}
+.veil{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;text-align:center;opacity:0;color:#5b4a2c}
+.veil::before{content:"";position:absolute;inset:-90px -140px;z-index:-1;background:radial-gradient(closest-side,rgba(246,239,226,.9),rgba(246,239,226,.5) 60%,rgba(246,239,226,0))}
+@media (max-width:760px){.hero{top:40%!important;bottom:auto!important}.hero .mark{--s:68px}.hero .kicker{justify-content:center}}
+.veil .mark{--s:96px;margin:0 auto 12px;border-color:#b8955a;color:#b8955a}
+.veil b{display:block;font:600 clamp(28px,4vw,52px) Fraunces,serif;letter-spacing:.02em}
+.veil small{font-size:11px;letter-spacing:.3em;text-transform:uppercase}
 .status{opacity:.85}
 .pill{border:1px solid rgba(246,239,226,.55);background:rgba(20,17,15,.2);padding:8px 15px;border-radius:99px;text-decoration:none;color:var(--paper);letter-spacing:.14em;text-transform:uppercase;font-size:12px}
 .pill.solid{background:var(--coral);border-color:var(--coral)}
@@ -43,6 +58,8 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 .polaroid{position:fixed;width:min(200px,16vw);background:#fbf8f2;padding:8px 8px 30px;box-shadow:0 18px 50px rgba(0,0,0,.45);opacity:0;z-index:2;pointer-events:none;will-change:transform,opacity}
 .polaroid img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
 .polaroid span{position:absolute;bottom:6px;left:0;right:0;text-align:center;font:400 13px Fraunces,serif;color:#6b5f55}
+.polaroid::after{content:"Pousada Trancoso";position:absolute;top:14px;right:-4px;transform:rotate(8deg);padding:2px 7px;border:1.5px solid rgba(176,60,40,.75);
+  border-radius:3px;font:600 9px Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:rgba(176,60,40,.85);background:rgba(251,248,242,.85)}
 /* chapter drawer: jump straight to a part without travelling through every scene */
 .drawer{position:fixed;inset:0;z-index:9;display:flex;justify-content:flex-end;visibility:hidden}
 .drawer.open{visibility:visible}
@@ -81,7 +98,8 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 <canvas id="gl"></canvas>
 <div class="shade"></div>
 <div class="flash" id="flash"></div>
-<header class="top"><b>Pousada Trancoso</b><span class="status" id="status"></span><span class="status" style="opacity:.55">Protótipo</span>
+<div class="veil" id="veil"><div class="mark">T</div><b>Pousada Trancoso</b><small>Setiba · Guarapari</small></div>
+<header class="top"><b><span class="mark">T</span>Pousada Trancoso</b><span class="status" id="status"></span><span class="status" style="opacity:.55">Protótipo</span>
   <button class="pill" data-sound aria-pressed="false">♪ Som</button><button class="pill" data-open>Capítulos</button><a class="pill solid" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar</a></header>
 <div class="progress"><i id="bar"></i></div>
 <div class="hint" id="hint">Deslize para descer<i></i></div>
@@ -94,8 +112,8 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 <script>
 // fx/fy: where to keep the crop on a tall phone screen (0..1 across the photo). pan: sideways camera travel over the scene.
 const CH = [
-  {img:'01-amanhecer', fx:.5, fy:.5, pan:[.05,0], side:'left', k:'Setiba · Guarapari', short:'Amanhecer',
-   h:'O dia começa a poucos passos do mar', p:'Uma pousada de família no litoral do Espírito Santo. Acorde com o som das ondas e desça para a areia antes do café.'},
+  {img:'01-amanhecer', fx:.5, fy:.5, pan:[.05,0], side:'left', hero:true, k:'Setiba · Guarapari · ES', short:'Pousada Trancoso',
+   h:'Pousada Trancoso', tag:'O dia começa a poucos passos do mar', p:'Pousada e restaurante de família no litoral do Espírito Santo.'},
   {img:'02-setiba', fx:.42, fy:.5, pan:[-.05,0], side:'right', k:'A praia', short:'Praia e piscina',
    cards:[['fb-piscina','A piscina'],['fb-cafe','Café na beira da piscina'],['ig-praia','Setiba vista do alto']],
    h:'Praia, piscina e café da manhã', p:'Duas piscinas, área de lazer ao ar livre e café da manhã incluso. A praia de Setiba fica logo ali.'},
@@ -189,8 +207,9 @@ addEventListener('resize',()=>{resize(); CH.forEach(c=>c.place&&c.place()); draw
 
 // ---- copy, polaroids, chapter list
 const els=CH.map((c,i)=>{
-  const t=document.createElement('article'); t.className='copy '+c.side; const H=i?'h2':'h1';
-  t.innerHTML=`<p class="kicker"><i>${String(i+1).padStart(2,'0')}</i>${c.k}</p><${H}>${c.h}</${H}><p>${c.p}</p>`+
+  const t=document.createElement('article'); t.className='copy '+c.side+(c.hero?' hero':''); const H=i?'h2':'h1';
+  t.innerHTML=(c.hero?'<div class="mark">T</div>':'')+`<p class="kicker">${c.hero?'':`<i>${String(i+1).padStart(2,'0')}</i>`}${c.k}</p><${H}>${c.h}</${H}>`+
+    (c.tag?`<p class="tag">${c.tag}</p>`:'')+`<p>${c.p}</p>`+
     (c.price?`<div class="price">${c.price.map(([a,b])=>`<div><strong>${a}</strong>${b}</div>`).join('')}</div>`:'')+
     (c.note?`<p class="note">${c.note}</p>`:'')+
     (c.cta?`<a class="cta" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar pelo WhatsApp</a>`:'');
@@ -317,6 +336,9 @@ function draw(p){
   const cur=CH.reduce((a,c,i)=>p>=c.start-LINK/2?i:a,0);
   if(cur!==active){ active=cur; const c=CH[cur], label=`${String(cur+1).padStart(2,'0')} — ${c.short}`;
     $('status').textContent=label; $('now').textContent=label; els.forEach((e,i)=>e.b.classList.toggle('on',i===cur)); }
+  // the name surfaces in the mist of every transition (Joel: "Pousada Trancoso needs more attention")
+  const li=CH.findIndex((c,k)=>CH[k+1]&&p>c.end&&p<CH[k+1].start), lu=li<0?0:(p-CH[li].end)/LINK;
+  $('veil').style.opacity=(li<0?0:Math.pow(Math.sin(Math.PI*clamp(lu)),2)*.85).toFixed(3);
   $('bar').style.transform=`scaleX(${(p/TOTAL).toFixed(4)})`;
   $('hint').style.opacity=Math.abs(p-STOPS[0].p)>.1?0:1;
   dirty=true;
