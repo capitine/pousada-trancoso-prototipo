@@ -25,7 +25,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .copy{position:fixed;top:50%;width:min(420px,38vw);opacity:0;z-index:3;transform:translateY(-50%);text-shadow:0 1px 3px rgba(0,0,0,.55),0 1px 18px rgba(0,0,0,.6);pointer-events:none}
 /* soft edge-free glow behind each text block so busy photos (trees, houses) don't fight the letters */
 .copy::before{content:"";position:absolute;inset:-70px -90px;z-index:-1;pointer-events:none;
-  background:radial-gradient(closest-side,rgba(15,12,10,.72),rgba(15,12,10,.5) 55%,rgba(15,12,10,0));filter:blur(10px)}
+  background:radial-gradient(closest-side,rgba(15,12,10,.8),rgba(15,12,10,.6) 55%,rgba(15,12,10,0));filter:blur(10px)}
 .copy.left{left:7vw}.copy.right{right:7vw}
 .copy.bottom{top:auto;bottom:9vh;left:50%;transform:translateX(-50%);width:min(640px,84vw);text-align:center}
 .kicker{display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
@@ -196,26 +196,39 @@ const els=CH.map((c,i)=>{
 
 // ---- input: one virtual position eased toward a target
 let target=0, pos=0, dirty=true;
-const push=d=>{target=clamp(target+d,0,TOTAL)};
+// Snap: each chapter has a resting spot. Small scrolls nudge the scene and spring back; past SNAP it glides to the
+// next/previous chapter by itself. Scrolling the other way during the glide turns it around (Joel, 2026-10-22).
+// The line to cross is where the chapter's text card has fully faded (its scene edge), plus a little.
+const REST=CH.map(c=>c.start+SCENE*.5), PAST=.05, SNAP=SCENE*.5+PAST;
+let base=0, idle=null, gliding=false;
+function settle(){
+  if(ty!==null) return;                               // finger still down
+  const c=CH[base]; let nb=base;
+  if(target>c.end+PAST) nb=Math.max(base+1,REST.findLastIndex(r=>r<=target));
+  else if(target<c.start-PAST) nb=Math.min(base-1,REST.findIndex(r=>r>=target));
+  base=clamp(nb,0,REST.length-1); target=REST[base]; gliding=true;
+}
+function step(dir){ base=clamp(base+dir,0,REST.length-1); target=REST[base]; gliding=true; }
+const push=d=>{target=clamp(target+d,0,TOTAL); gliding=false; clearTimeout(idle); idle=setTimeout(settle,160)};
 const drawer=$('drawer'), isOpen=()=>drawer.classList.contains('open');
 document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>drawer.classList.add('open'));
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>drawer.classList.remove('open'));
 function jump(i){                      // quick fade, then land on the chapter — no travelling through every scene
   drawer.classList.remove('open'); $('flash').classList.add('on');
-  setTimeout(()=>{ target=pos=CH[i].start+(i?.35:0); draw(pos); setTimeout(()=>$('flash').classList.remove('on'),120) },360);
+  setTimeout(()=>{ base=i; target=pos=REST[i]; draw(pos); setTimeout(()=>$('flash').classList.remove('on'),120) },360);
 }
-addEventListener('wheel',e=>{ if(isOpen())return; e.preventDefault(); push(clamp(e.deltaY,-120,120)/innerHeight*3.2)},{passive:false});   // ~6 wheel clicks per chapter
+addEventListener('wheel',e=>{ if(isOpen())return; e.preventDefault(); push(clamp(e.deltaY,-120,120)/100*.26)},{passive:false});   // ~3 wheel clicks fade the card out and start the glide
 let ty=null, vel=0, lt=0;
 addEventListener('touchstart',e=>{ if(isOpen()||e.target.closest('.bar,a,button'))return; ty=e.touches[0].clientY; vel=0; lt=performance.now()},{passive:true});
 addEventListener('touchmove',e=>{ if(ty===null)return; e.preventDefault();
   const y=e.touches[0].clientY, d=(ty-y)/innerHeight*1.8, now=performance.now();
   vel=d/Math.max(1,now-lt)*16; lt=now; ty=y; push(d)},{passive:false});
-addEventListener('touchend',()=>{ if(ty!==null) push(clamp(vel*10,-.9,.9)); ty=null });
+addEventListener('touchend',()=>{ const t=ty; ty=null; if(t!==null) push(clamp(vel*6,-.5,.5)) });
 addEventListener('keydown',e=>{
   if(e.key==='Escape') drawer.classList.remove('open');
   if(isOpen()) return;
-  if(['ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();push(.5)}
-  if(['ArrowUp','PageUp'].includes(e.key)){e.preventDefault();push(-.5)}
+  if(['ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();step(1)}
+  if(['ArrowUp','PageUp'].includes(e.key)){e.preventDefault();step(-1)}
 });
 
 let active=-1;
@@ -248,17 +261,18 @@ function draw(p){
   if(cur!==active){ active=cur; const c=CH[cur], label=`${String(cur+1).padStart(2,'0')} — ${c.short}`;
     $('status').textContent=label; $('now').textContent=label; els.forEach((e,i)=>e.b.classList.toggle('on',i===cur)); }
   $('bar').style.transform=`scaleX(${(p/TOTAL).toFixed(4)})`;
-  $('hint').style.opacity=p>.15?0:1;
+  $('hint').style.opacity=Math.abs(p-REST[0])>.1?0:1;
   dirty=true;
 }
 resize();
+target=pos=REST[0];
 (function loop(ms){
   const d=target-pos;
-  if(Math.abs(d)>.0004){ pos+=d*(reduce?.15:.1); draw(pos); }
+  if(Math.abs(d)>.0004){ pos+=d*(gliding?.045:reduce?.15:.1); draw(pos); }   // the glide is slower, like a camera move
   render(pos,(ms||0)/1000);         // always redraw: the gentle sway keeps the photo alive while you read
   requestAnimationFrame(loop);
 })();
-draw(0);
+draw(pos);
 </script>
 </body>
 </html>
