@@ -93,6 +93,12 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 .mp div{display:flex;gap:8px;justify-content:center}
 .mp button{width:40px;height:40px;border-radius:50%;border:1px solid rgba(246,239,226,.35);background:rgba(246,239,226,.06);font-size:15px}
 .mp button:hover{background:rgba(246,239,226,.18)}
+/* ☰ opens the song list under the controls */
+.mp ol{display:none;list-style:none;margin:10px 0 0;padding:8px 0 0;border-top:1px solid rgba(246,239,226,.15);max-height:min(46vh,340px);overflow-y:auto}
+.mp.list ol{display:block}
+.mp ol button{width:100%;height:auto;border:0;border-radius:8px;background:none;display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 8px;text-align:left}
+.mp ol b{margin:0;font-size:13px}.mp ol em{font:400 10px Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-style:normal;white-space:nowrap}
+.mp ol button.now{background:rgba(246,239,226,.12)}.mp ol button.now b{color:var(--coral)}
 .bar{display:none}
 .hint{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.18em;text-transform:uppercase;z-index:4;transition:opacity .8s;text-align:center;pointer-events:none}
 .hint i{display:block;width:1px;height:34px;margin:8px auto 0;background:linear-gradient(var(--paper),transparent);animation:drip 2.2s ease-in-out infinite}
@@ -340,13 +346,13 @@ addEventListener('keydown',e=>{
 // leave a gap at the seam and nothing stops two copies overlapping. Here: one decoded copy, a sample-exact loop,
 // and a bed can only ever be started once.
 const MIX={ondas:.17, vida:1, musica:.3};   // the three levels Joel tunes by ear (open the page with ?mix for sliders)
-// Songs: Suno covers of our own Brazilian groove demos (PT-006..009). Order like an album: samba opens (Joel: start with
-// the most samba/pagode-like ones), then the bossa takes he liked, then the rest.
-const SONGS=[['PT-007-A','Roda em Setiba · samba de roda'],['PT-007-B','Roda em Setiba · samba de roda II'],
-  ['PT-006-A','Maré de Setiba · bossa nova'],['PT-006-B','Maré de Setiba · bossa nova II'],
-  ['PT-009-A','Ijexá do Entardecer'],['PT-009-B','Ijexá do Entardecer II'],
-  ['PT-008-A','Baião da Varanda'],['PT-008-B','Baião da Varanda II'],
-  ['PT-001b-A','Maré de Setiba · violão'],['PT-001b-B','Maré de Setiba · violão II']];
+// Songs: Suno covers of our own Brazilian groove demos. Ordered like an album: samba opens (Joel: start with the most
+// samba/pagode-like), and the two takes of each generation sit five tracks apart since they sound alike. Each take
+// has its own name (places around Guarapari) so no title repeats. [file, name, style]
+const SONGS=[['PT-007-A','Roda em Setiba','samba de roda'],['PT-006-A','Maré de Setiba','bossa nova'],
+  ['PT-009-A','Ijexá do Entardecer','ijexá'],['PT-008-A','Baião da Varanda','baião'],['PT-001b-A','Violão de Meaípe','violão'],
+  ['PT-007-B','Samba das Três Praias','samba de roda'],['PT-006-B','Brisa da Restinga','bossa nova'],
+  ['PT-009-B','Lagoa Escura','ijexá'],['PT-008-B','Pé na Areia','baião'],['PT-001b-B','Céu de Peracanga','violão']];
 let ctx=null, soundOn=false, lifeT=null, stopT=null;
 const BUF={}, BED={ondas:{}, musica:{}};
 const song={i:0, src:null, at:0, off:0};        // current track, when it started, where it was paused
@@ -383,18 +389,24 @@ function sound(on){
 }
 // mini player: hover ♪ (or tap it on a phone) -> ⏮ ▶/⏸ ⏭ + song name; tucks away 1.5 s after the pointer leaves
 const MP=document.createElement('div'); MP.className='mp'; MP.setAttribute('role','group'); MP.setAttribute('aria-label','Música');
-MP.innerHTML='<small>Música</small><b id="mpT"></b><div><button data-mp="-1" aria-label="Anterior">⏮</button><button data-mp="0" id="mpP" aria-label="Tocar ou pausar">▶</button><button data-mp="1" aria-label="Próxima">⏭</button></div>';
+MP.innerHTML='<small id="mpS">Música</small><b id="mpT"></b><div><button data-mp="-1" aria-label="Anterior">⏮</button><button data-mp="0" id="mpP" aria-label="Tocar ou pausar">▶</button><button data-mp="1" aria-label="Próxima">⏭</button>'+
+  '<button data-mp="list" aria-label="Lista de músicas" aria-expanded="false">☰</button></div>'+
+  '<ol id="mpL">'+SONGS.map(([,n,s],i)=>`<li><button data-i="${i}"><b>${n}</b><em>${s}</em></button></li>`).join('')+'</ol>';
 document.body.appendChild(MP);
-function showSong(){ $('mpT').textContent=`${song.i+1}/${SONGS.length} · ${SONGS[song.i][1]}`; $('mpP').textContent=soundOn?'⏸':'▶'; }
-let mpT=null;
-function openMP(btn){ clearTimeout(mpT); const r=btn.getBoundingClientRect(), up=r.top>innerHeight/2;
+function showSong(){ $('mpS').textContent='Música · '+SONGS[song.i][2]; $('mpT').textContent=`${song.i+1}/${SONGS.length} · ${SONGS[song.i][1]}`; $('mpP').textContent=soundOn?'⏸':'▶';
+  MP.querySelectorAll('[data-i]').forEach(b=>b.classList.toggle('now',+b.dataset.i===song.i)); }
+let mpT=null, mpBtn=null;
+function openMP(btn){ clearTimeout(mpT); mpBtn=btn; const r=btn.getBoundingClientRect(), up=r.top>innerHeight/2;
   MP.style.left=Math.min(innerWidth-MP.offsetWidth-12, Math.max(12, r.left+r.width/2-MP.offsetWidth/2))+'px';
   MP.style.top=(up? r.top-MP.offsetHeight-10 : r.bottom+10)+'px'; MP.classList.add('on'); showSong(); }
 const closeMP=(ms=1500)=>{ clearTimeout(mpT); mpT=setTimeout(()=>MP.classList.remove('on'),ms); };
 MP.onmouseenter=()=>clearTimeout(mpT); MP.onmouseleave=()=>closeMP();
-MP.onclick=e=>{ const d=e.target.dataset.mp; if(d===undefined) return; clearTimeout(mpT);
-  if(d==='0') sound(!soundOn); else { if(!soundOn){ song.i=(song.i+(+d)+SONGS.length)%SONGS.length; song.off=0; sound(true); } else { level('musica',MIX.musica,.3); playSong(song.i+(+d)); } }
-  showSong(); if(matchMedia('(hover:none)').matches) closeMP(4000); };
+function pick(i){ if(!soundOn){ song.i=(i+SONGS.length)%SONGS.length; song.off=0; sound(true); } else { level('musica',MIX.musica,.3); playSong(i); } }
+MP.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; const d=b.dataset.mp; clearTimeout(mpT);
+  if(d==='list'){ const on=MP.classList.toggle('list'); b.setAttribute('aria-expanded',on); openMP(mpBtn); }
+  else if(b.dataset.i) pick(+b.dataset.i);
+  else if(d==='0') sound(!soundOn); else pick(song.i+(+d));
+  showSong(); if(matchMedia('(hover:none)').matches) closeMP(MP.classList.contains('list')?9000:4000); };
 document.querySelectorAll('[data-sound]').forEach(x=>{
   x.onmouseenter=()=>openMP(x); x.onmouseleave=()=>closeMP();
   x.onclick=()=>{ sound(!soundOn); openMP(x); if(matchMedia('(hover:none)').matches) closeMP(4000); };
