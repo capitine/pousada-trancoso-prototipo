@@ -117,19 +117,19 @@ const CH = [
   {img:'02-setiba', fx:.42, fy:.5, pan:[-.05,0], side:'right', k:'A praia', short:'Praia e piscina',
    cards:[['v-piscina','A piscina'],['v-cafe','Café da manhã'],['v-praia','Setiba vista do alto']],
    h:'Praia, piscina e café da manhã', p:'Duas piscinas, área de lazer ao ar livre e café da manhã incluso. A praia de Setiba fica logo ali.'},
-  {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['ig-familia','Fim de semana em família']],
+  {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['v-quadriciclo','Passeio de quadriciclo'],['ig-familia','Fim de semana em família']],
    h:'Quadriciclo, lagoa e restinga', p:'Passeio de quadriciclo pela região do Parque Paulo César Vinha, onde a lagoa de água escura encontra o mar.',
    price:[['R$ 400','Casal, com café'],['R$ 490','Casal + 1 filho']], note:'Fim de semana em família · outubro a dezembro, sexta a domingo'},
-  {img:'04-mesa-pousada', fx:.5, fy:.72, pan:[.03,-.02], side:'left', k:'Restaurante Trancoso', short:'Lagosta e caranguejo',
-   cards:[['v-almoco','Almoço à beira da piscina'],['fb-moqueca','Moqueca de lagosta'],['fb-caranguejo','Caranguejo + moqueca'],['fb-festival','Festival lagosta e caranguejo']],
-   h:'Lagosta, caranguejo e moqueca', p:'Moqueca de lagosta, caranguejo e o festival de frutos do mar, servidos à beira da piscina no Restaurante Trancoso.',
+  {img:'04-mesa-pousada', fx:.5, fy:.72, pan:[.03,-.02], side:'left', k:'Restaurante Trancoso', short:'Moqueca e frutos do mar',
+   cards:[['v-moqueca','Moqueca de cação capixaba'],['v-risoto','Risoto de camarão'],['v-cacao','Cação ao molho de camarão'],['v-almoco','Almoço à beira da piscina'],['fb-festival','Festival lagosta e caranguejo']],
+   h:'Moqueca, lagosta e caranguejo', p:'Moqueca capixaba de cação, moqueca de lagosta, risoto de camarão e o festival de caranguejo, servidos à beira da piscina no Restaurante Trancoso.',
    note:'Preços dos anúncios antigos · confirmar com a pousada'},
   {img:'05-por-do-sol-setiba', fx:.5, fy:.5, pan:[-.04,0], side:'left', k:'Sexta-feira romântica', short:'Sexta romântica',
    cards:[['ig-romantica','Suíte decorada'],['v-jantar','Jantar à luz de velas'],['fb-hidro','Hidro à noite'],['fb-varanda','Petiscos na varanda']],
    h:'Quando o sol se põe, a mesa é só de vocês', p:'Suíte decorada, jantar à luz de velas e café da manhã no dia seguinte.',
    price:[['R$ 350','Por casal']]},
   {img:'06-salao', fx:.45, fy:.55, pan:[.04,-.02], side:'right', k:'Noites temáticas', short:'Baile e karaokê',
-   cards:[['fb-karaoke','Noite de karaokê'],['v-pista','Baile Flashback'],['v-cantor','Show ao vivo'],['v-noite','Noite na varanda']],
+   cards:[['fb-karaoke','Noite de karaokê'],['v-karaoke','Karaokê com animador'],['v-pista','Baile Flashback'],['v-cantor','Show ao vivo']],
    h:'Baile Retrô, flashback e karaokê', p:'Noite de karaokê com entrada liberada, bailes de anos 60, 80 e 90 e shows ao vivo. Quem veio, aprovou.'},
   {img:'00-restinga', fx:.42, fy:.55, pan:[0,-.04], side:'bottom', k:'Réveillon 2027', short:'Réveillon', cards:[['v-fogos','Queima de fogos'],['v-ceia','Ceia da virada'],['ig-reveillon','Réveillon Guarapari']],
    h:'Vire o ano com os pés na areia', p:'5 dias e 4 noites, show ao vivo, queima de fogos e mesa reservada para a virada.',
@@ -231,7 +231,8 @@ const els=CH.map((c,i)=>{
   });
   c.place=()=>pols.forEach((p,k)=>{   // cards land on the side away from the text, fanned out like photos on a table
     const phone=innerWidth<=760, x0=c.side==='left'?56:c.side==='right'?6:62;
-    p.style.left=(phone?4+(k%3)*29:x0+k*10)+'vw'; p.style.top=(phone?11+(k%2)*5+Math.floor(k/3)*18:c.side==='bottom'?8+k*6:14+k*16)+'vh'; });
+    const n=pols.length, dx=n>1?Math.min(10,28/(n-1)):0, dy=n>1?Math.min(16,50/(n-1)):0;   // fan fits on screen for 1-5 cards
+    p.style.left=(phone?4+(k%3)*29:x0+k*dx)+'vw'; p.style.top=(phone?11+(k%2)*5+Math.floor(k/3)*18:c.side==='bottom'?8+k*6:14+k*dy)+'vh'; });
   c.place();
   const b=document.createElement('button'); b.className='ch';
   b.innerHTML=`<img src="${PHOTO(c.img)}" alt=""><div><small>${String(i+1).padStart(2,'0')} · ${c.k}</small><span>${c.short}</span></div>`;
