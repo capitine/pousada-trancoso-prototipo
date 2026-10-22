@@ -128,7 +128,7 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
     background:rgba(28,23,20,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:16px;padding:8px}
   .bar .pill{display:block;padding:10px 14px}
   .bar .now{flex:1;font-size:12px;letter-spacing:.06em;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .hint{bottom:auto;top:44%}
+  .hint{bottom:calc(88px + env(safe-area-inset-bottom))}   /* sits just above the bottom bar; at top:44% it landed on the title (Joel's screenshot) */
 }
 </style>
 </head>
