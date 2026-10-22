@@ -294,12 +294,14 @@ addEventListener('keydown',e=>{
 // ---- sound: soft waves (public-domain recording) + the Suno song once Joel picks one (audio/musica.mp3). Off until tapped.
 // ponytail: plain <audio loop>; mp3 loops can click a little at the seam — switch to Web Audio if anyone hears it.
 const AUD=(n,v)=>{const a=new Audio((window.AUDIO&&AUDIO[n])||`audio/${n}.mp3`); a.loop=true; a.volume=0; a.max=v; a.onerror=()=>a.dead=true; return a};
-const tracks=[AUD('ondas',.17),AUD('musica',.45)];   // waves halved (Joel: too loud)
-let soundOn=false, fadeT=null;
+// MIX = the three levels Joel tunes by ear (open the page with ?mix to get sliders, then read the numbers back)
+const MIX={ondas:.17, vida:1, musica:.45};
+const tracks=[AUD('ondas',MIX.ondas),AUD('musica',MIX.musica)];
+let soundOn=false, fadeT=null, lifeT=null;
 function sound(on){
   soundOn=on; document.querySelectorAll('[data-sound]').forEach(b=>b.setAttribute('aria-pressed',on));
   clearInterval(fadeT);
-  if(on) tracks.forEach(a=>!a.dead&&a.play().catch(()=>{}));
+  if(on){ tracks.forEach(a=>!a.dead&&a.play().catch(()=>{})); clearTimeout(lifeT); lifeT=setTimeout(lifeOnce,3000); }   // first gull/kids soon after tapping
   fadeT=setInterval(()=>{ let busy=false;
     tracks.forEach(a=>{ const goal=on?a.max:0; a.volume=clamp(a.volume+(goal>a.volume?.03:-.05),0,1);
       if(Math.abs(a.volume-goal)>.03) busy=true; else a.volume=goal; if(!on&&a.volume===0) a.pause(); });
@@ -307,12 +309,21 @@ function sound(on){
 }
 document.querySelectorAll('[data-sound]').forEach(b=>b.onclick=()=>sound(!soundOn));
 // beach life, quiet and at random times so it never repeats the same way: gulls now and then, kids far away
-const LIFE=[['gaivota-1',.2],['gaivota-2',.18],['criancas-1',.13],['criancas-2',.12],['criancas-3',.13],['criancas-4',.12],['criancas-c1',.14],['criancas-c2',.14],['criancas-c3',.14]];
-(function life(){
-  setTimeout(()=>{ if(soundOn){ const [n,v]=LIFE[Math.floor(Math.random()*LIFE.length)];
-      const a=new Audio((window.AUDIO&&AUDIO[n])||`audio/${n}.mp3`); a.volume=v*(.6+Math.random()*.4); a.play().catch(()=>{}); }
-    life(); }, 9000+Math.random()*16000);
-})();
+// (levels about 2x the last version: Joel couldn't hear the kids under the real waves)
+const LIFE=[['gaivota-1',.35],['gaivota-2',.32],['criancas-1',.28],['criancas-2',.26],['criancas-3',.28],['criancas-4',.26],['criancas-c1',.3],['criancas-c2',.3],['criancas-c3',.3]];
+function lifeOnce(){
+  if(soundOn){ const [n,v]=LIFE[Math.floor(Math.random()*LIFE.length)];
+    const a=new Audio((window.AUDIO&&AUDIO[n])||`audio/${n}.mp3`); a.volume=clamp(v*MIX.vida*(.7+Math.random()*.3),0,1); a.play().catch(()=>{}); }
+  clearTimeout(lifeT); lifeT=setTimeout(lifeOnce, 7000+Math.random()*12000);
+}
+if(location.search.includes('mix')){            // tuning panel: three sliders, numbers shown so Joel can tell me the mix
+  const m=document.createElement('div');
+  m.style.cssText='position:fixed;left:16px;bottom:16px;z-index:20;background:rgba(20,17,15,.92);padding:12px 14px;border-radius:12px;font:12px Inter;color:#f6efe2;display:grid;gap:6px';
+  m.innerHTML='<b>Mixer</b>'+Object.keys(MIX).map(k=>`<label>${k} <input type="range" min="0" max="${k==='vida'?3:1}" step="0.01" value="${MIX[k]}" data-k="${k}"> <span>${MIX[k]}</span></label>`).join('');
+  m.oninput=e=>{ const k=e.target.dataset.k; if(!k) return; MIX[k]=+e.target.value; e.target.nextElementSibling.textContent=MIX[k];
+    if(k==='ondas'){tracks[0].max=MIX[k]; if(soundOn) tracks[0].volume=MIX[k]} if(k==='musica'){tracks[1].max=MIX[k]; if(soundOn) tracks[1].volume=MIX[k]} };
+  document.body.appendChild(m);
+}
 
 let active=-1;
 function render(p,time){
