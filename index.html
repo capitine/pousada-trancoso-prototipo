@@ -107,7 +107,7 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 <div class="drawer" id="drawer"><div class="bg" data-close></div>
   <nav aria-label="Capítulos"><header>Capítulos<button data-close aria-label="Fechar">×</button></header><div id="list"></div>
   <a class="cta book" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar pelo WhatsApp</a>
-  <p style="margin-top:18px;font-size:11px;line-height:1.5;color:#a89c8f">Protótipo não oficial. Créditos: fotos da Pousada Trancoso (Instagram/Facebook) e Wikimedia Commons — Marcelo Moryan, Vitor Jubini e outros autores (CC BY-SA). Sons: ondas e crianças da biblioteca Sound Ideas (curso de áudio); gaivota XC707075 (CC0); crianças: “Douzen kids on playground” (domínio público) e “Ambient sound children playing in a park” (CC BY-SA 4.0).</p></nav></div>
+  <p style="margin-top:18px;font-size:11px;line-height:1.5;color:#a89c8f">Protótipo não oficial. Créditos: fotos da Pousada Trancoso (Instagram/Facebook) e Wikimedia Commons — Marcelo Moryan, Vitor Jubini e outros autores (CC BY-SA). Música: “Maré de Setiba” (Suno, protótipo). Sons: ondas e crianças da biblioteca Sound Ideas (curso de áudio); gaivota XC707075 (CC0); crianças: “Douzen kids on playground” (domínio público) e “Ambient sound children playing in a park” (CC BY-SA 4.0).</p></nav></div>
 
 <script>
 // fx/fy: where to keep the crop on a tall phone screen (0..1 across the photo). pan: sideways camera travel over the scene.
@@ -295,13 +295,14 @@ addEventListener('keydown',e=>{
 // Web Audio, not <audio loop>: Joel heard a "washing machine" on the site but not in the file itself — <audio> loops
 // leave a gap at the seam and nothing stops two copies overlapping. Here: one decoded copy, a sample-exact loop,
 // and a bed can only ever be started once.
-const MIX={ondas:.17, vida:1, musica:.45};   // the three levels Joel tunes by ear (open the page with ?mix for sliders)
+const MIX={ondas:.17, vida:1, musica:.3};   // the three levels Joel tunes by ear (open the page with ?mix for sliders)
 let ctx=null, soundOn=false, lifeT=null, stopT=null;
 const BUF={}, BED={ondas:{}, musica:{}};
 async function load(n){
   if(n in BUF) return BUF[n];
   BUF[n]=null;
-  try{ const r=await fetch((window.AUDIO&&AUDIO[n])||`audio/${n}.mp3`); if(r.ok) BUF[n]=await ctx.decodeAudioData(await r.arrayBuffer()); }catch(e){}
+  const f=n==='musica'&&/take=b/.test(location.search)?'musica-b':n;   // ?take=b plays Suno take B (PT-001) instead of A
+  try{ const r=await fetch((window.AUDIO&&AUDIO[f])||`audio/${f}.mp3`); if(r.ok) BUF[n]=await ctx.decodeAudioData(await r.arrayBuffer()); }catch(e){}
   return BUF[n];
 }
 function level(n,v,t=1.2){ const g=BED[n].gain.gain, now=ctx.currentTime; g.cancelScheduledValues(now); g.setValueAtTime(g.value,now); g.linearRampToValueAtTime(v,now+t); }
