@@ -293,7 +293,7 @@ addEventListener('keydown',e=>{
 // ---- sound: soft waves (public-domain recording) + the Suno song once Joel picks one (audio/musica.mp3). Off until tapped.
 // ponytail: plain <audio loop>; mp3 loops can click a little at the seam — switch to Web Audio if anyone hears it.
 const AUD=(n,v)=>{const a=new Audio((window.AUDIO&&AUDIO[n])||`audio/${n}.mp3`); a.loop=true; a.volume=0; a.max=v; a.onerror=()=>a.dead=true; return a};
-const tracks=[AUD('ondas',.35),AUD('musica',.45)];
+const tracks=[AUD('ondas',.17),AUD('musica',.45)];   // waves halved (Joel: too loud)
 let soundOn=false, fadeT=null;
 function sound(on){
   soundOn=on; document.querySelectorAll('[data-sound]').forEach(b=>b.setAttribute('aria-pressed',on));
@@ -306,7 +306,7 @@ function sound(on){
 }
 document.querySelectorAll('[data-sound]').forEach(b=>b.onclick=()=>sound(!soundOn));
 // beach life, quiet and at random times so it never repeats the same way: gulls now and then, kids far away
-const LIFE=[['gaivota-1',.16],['gaivota-2',.14],['criancas-1',.07],['criancas-2',.06],['criancas-3',.07],['criancas-4',.06]];
+const LIFE=[['gaivota-1',.2],['gaivota-2',.18],['criancas-1',.13],['criancas-2',.12],['criancas-3',.13],['criancas-4',.12]];
 (function life(){
   setTimeout(()=>{ if(soundOn){ const [n,v]=LIFE[Math.floor(Math.random()*LIFE.length)];
       const a=new Audio((window.AUDIO&&AUDIO[n])||`audio/${n}.mp3`); a.volume=v*(.6+Math.random()*.4); a.play().catch(()=>{}); }
