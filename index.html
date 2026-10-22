@@ -88,7 +88,8 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 <div class="bar"><button class="pill" data-sound aria-pressed="false" aria-label="Som">♪</button><button class="pill" data-open>☰ Capítulos</button><span class="now" id="now"></span><a class="pill solid" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar</a></div>
 <div class="drawer" id="drawer"><div class="bg" data-close></div>
   <nav aria-label="Capítulos"><header>Capítulos<button data-close aria-label="Fechar">×</button></header><div id="list"></div>
-  <a class="cta book" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar pelo WhatsApp</a></nav></div>
+  <a class="cta book" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar pelo WhatsApp</a>
+  <p style="margin-top:18px;font-size:11px;line-height:1.5;color:#a89c8f">Protótipo não oficial. Créditos: fotos da Pousada Trancoso (Instagram/Facebook) e Wikimedia Commons — Marcelo Moryan, Vitor Jubini e outros autores (CC BY-SA). Sons: ondas geradas; gaivota XC707075 (CC0); crianças: “Douzen kids on playground” (domínio público) e “Ambient sound children playing in a park” (CC BY-SA 4.0).</p></nav></div>
 
 <script>
 // fx/fy: where to keep the crop on a tall phone screen (0..1 across the photo). pan: sideways camera travel over the scene.
@@ -214,15 +215,14 @@ let target=0, pos=0, dirty=true;
 // next/previous chapter by itself. Scrolling the other way during the glide turns it around (Joel, 2026-10-22).
 // The line to cross is where the chapter's text card has fully faded (its scene edge), plus a little.
 // Stops inside a chapter (each card) need only a nudge; leaving a chapter needs the text card fully faded.
-const PAST=.05, NUDGE=.2, REST=CH.map(c=>STOPS.findIndex(s=>s.ch===CH.indexOf(c)));
+const REST=CH.map(c=>STOPS.findIndex(s=>s.ch===CH.indexOf(c)));
 let base=0, idle=null, gliding=false;
-const down=b=>{ const s=STOPS[b], n=STOPS[b+1]; return !n?Infinity: n.ch===s.ch? s.p+NUDGE : CH[s.ch].end+PAST };
-const up=b=>{ const s=STOPS[b], q=STOPS[b-1]; return !q?-Infinity: q.ch===s.ch? s.p-NUDGE : CH[s.ch].start-PAST };
 function settle(){
   if(ty!==null) return;                               // finger still down
-  let nb=base;
-  while(target>down(nb)) nb++;
-  if(nb===base) while(target<up(nb)) nb--;            // only look back if we didn't move forward
+  // finger drag: a short drag past the current stop is enough (same "easy snap" as the wheel)
+  let nb=base; const EASY=.12;
+  while(nb<STOPS.length-1&&target>STOPS[nb].p+EASY) nb++;
+  if(nb===base) while(nb>0&&target<STOPS[nb].p-EASY) nb--;
   base=nb; target=STOPS[base].p; gliding=true;
 }
 function step(dir){ base=clamp(base+dir,0,STOPS.length-1); target=STOPS[base].p; gliding=true; }
@@ -234,7 +234,19 @@ function jump(i){                      // quick fade, then land on the chapter �
   drawer.classList.remove('open'); $('flash').classList.add('on');
   setTimeout(()=>{ base=REST[i]; target=pos=STOPS[base].p; draw(pos); setTimeout(()=>$('flash').classList.remove('on'),120) },360);
 }
-addEventListener('wheel',e=>{ if(isOpen())return; e.preventDefault(); push(clamp(e.deltaY,-120,120)/100*.26)},{passive:false});   // ~3 wheel clicks fade the card out and start the glide
+// Mouse wheel = intent, not distance (Joel: "had to scroll hard to make it snap"): one small scroll glides to the next stop,
+// then a short cooldown swallows the rest of that flick so cards don't skip. Reversing works at once; holding the
+// scroll keeps stepping, one stop per cooldown, so fast readers still move fast.
+const WHEEL_KICK=40, COOL=650;
+let acc=0, accT=null, lockUntil=0, lastDir=0;
+addEventListener('wheel',e=>{ if(isOpen())return; e.preventDefault();
+  acc+=e.deltaY*(e.deltaMode===1?33:1); clearTimeout(accT); accT=setTimeout(()=>{acc=0; if(!gliding) target=STOPS[base].p},180);
+  const dir=Math.sign(acc), now=performance.now();
+  if(Math.abs(acc)<WHEEL_KICK){ if(!gliding) target=STOPS[base].p+clamp(acc/WHEEL_KICK,-1,1)*.05; return }   // tiny lean = "I felt that"
+  acc=0;
+  if(dir===lastDir&&now<lockUntil){ if(Math.abs(e.deltaY)<40) lockUntil=Math.max(lockUntil,now+250); return }   // trackpad coasting can't skip a card
+  lastDir=dir; lockUntil=now+COOL; step(dir);
+},{passive:false});
 let ty=null, vel=0, lt=0;
 addEventListener('touchstart',e=>{ if(isOpen()||e.target.closest('.bar,a,button'))return; ty=e.touches[0].clientY; vel=0; lt=performance.now()},{passive:true});
 addEventListener('touchmove',e=>{ if(ty===null)return; e.preventDefault();
@@ -263,6 +275,13 @@ function sound(on){
     if(!busy) clearInterval(fadeT); },60);
 }
 document.querySelectorAll('[data-sound]').forEach(b=>b.onclick=()=>sound(!soundOn));
+// beach life, quiet and at random times so it never repeats the same way: gulls now and then, kids far away
+const LIFE=[['gaivota-1',.16],['gaivota-2',.14],['criancas-1',.07],['criancas-2',.06],['criancas-3',.07],['criancas-4',.06]];
+(function life(){
+  setTimeout(()=>{ if(soundOn){ const [n,v]=LIFE[Math.floor(Math.random()*LIFE.length)];
+      const a=new Audio((window.AUDIO&&AUDIO[n])||`audio/${n}.mp3`); a.volume=v*(.6+Math.random()*.4); a.play().catch(()=>{}); }
+    life(); }, 9000+Math.random()*16000);
+})();
 
 let active=-1;
 function render(p,time){
