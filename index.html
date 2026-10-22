@@ -75,6 +75,15 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 .ch small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--coral)}
 .ch span{font:600 16px/1.25 Fraunces,serif}
 .drawer .book{display:block;text-align:center;margin-top:14px}
+.mp{position:fixed;z-index:8;min-width:230px;padding:10px 12px 12px;border-radius:14px;background:rgba(20,17,15,.88);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--paper);box-shadow:0 14px 40px rgba(0,0,0,.4);
+  opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;transition:opacity .25s,transform .25s}
+.mp.on{opacity:1;transform:none;pointer-events:auto}
+.mp small{display:block;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--coral)}
+.mp b{display:block;font:600 14px Fraunces,serif;margin:2px 0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+.mp div{display:flex;gap:8px;justify-content:center}
+.mp button{width:40px;height:40px;border-radius:50%;border:1px solid rgba(246,239,226,.35);background:rgba(246,239,226,.06);font-size:15px}
+.mp button:hover{background:rgba(246,239,226,.18)}
 .bar{display:none}
 .hint{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.18em;text-transform:uppercase;z-index:4;transition:opacity .8s;text-align:center;pointer-events:none}
 .hint i{display:block;width:1px;height:34px;margin:8px auto 0;background:linear-gradient(var(--paper),transparent);animation:drip 2.2s ease-in-out infinite}
@@ -107,7 +116,7 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 <div class="drawer" id="drawer"><div class="bg" data-close></div>
   <nav aria-label="Capítulos"><header>Capítulos<button data-close aria-label="Fechar">×</button></header><div id="list"></div>
   <a class="cta book" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar pelo WhatsApp</a>
-  <p style="margin-top:18px;font-size:11px;line-height:1.5;color:#a89c8f">Protótipo não oficial. Créditos: fotos da Pousada Trancoso (Instagram/Facebook) e Wikimedia Commons — Marcelo Moryan, Vitor Jubini e outros autores (CC BY-SA). Música: “Maré de Setiba” (Suno, protótipo). Sons: ondas e crianças da biblioteca Sound Ideas (curso de áudio); gaivota XC707075 (CC0); crianças: “Douzen kids on playground” (domínio público) e “Ambient sound children playing in a park” (CC BY-SA 4.0).</p></nav></div>
+  <p style="margin-top:18px;font-size:11px;line-height:1.5;color:#a89c8f">Protótipo não oficial. Créditos: fotos da Pousada Trancoso (Instagram/Facebook) e Wikimedia Commons — Marcelo Moryan, Vitor Jubini e outros autores (CC BY-SA). Músicas: Suno (protótipo), a partir de ritmos brasileiros escritos por nós. Sons: ondas e crianças da biblioteca Sound Ideas (curso de áudio); gaivota XC707075 (CC0); crianças: “Douzen kids on playground” (domínio público) e “Ambient sound children playing in a park” (CC BY-SA 4.0).</p></nav></div>
 
 <script>
 // fx/fy: where to keep the crop on a tall phone screen (0..1 across the photo). pan: sideways camera travel over the scene.
@@ -291,13 +300,19 @@ addEventListener('keydown',e=>{
   if(['ArrowUp','PageUp'].includes(e.key)){e.preventDefault();step(-1)}
 });
 
-// ---- sound: real waves (Sound Ideas, course library) + kids/gulls at random + the Suno song once picked (audio/musica.mp3).
+// ---- sound: real waves (Sound Ideas, course library) + kids/gulls at random + a playlist of the Suno songs.
 // Web Audio, not <audio loop>: Joel heard a "washing machine" on the site but not in the file itself — <audio> loops
 // leave a gap at the seam and nothing stops two copies overlapping. Here: one decoded copy, a sample-exact loop,
 // and a bed can only ever be started once.
 const MIX={ondas:.17, vida:1, musica:.3};   // the three levels Joel tunes by ear (open the page with ?mix for sliders)
+// Songs: Suno covers of our own Brazilian groove demos (PT-006..009). Joel liked both bossa takes; the rest are to audition.
+const SONGS=[['PT-006-A','Maré de Setiba · bossa nova'],['PT-006-B','Maré de Setiba · bossa nova II'],
+  ['PT-007-A','Roda em Setiba · samba de roda'],['PT-007-B','Roda em Setiba · samba de roda II'],
+  ['PT-009-A','Ijexá do Entardecer'],['PT-009-B','Ijexá do Entardecer II'],
+  ['PT-008-A','Baião da Varanda'],['PT-008-B','Baião da Varanda II']];
 let ctx=null, soundOn=false, lifeT=null, stopT=null;
 const BUF={}, BED={ondas:{}, musica:{}};
+const song={i:0, src:null, at:0, off:0};        // current track, when it started, where it was paused
 async function load(n){
   if(n in BUF) return BUF[n];
   BUF[n]=null;
@@ -310,17 +325,43 @@ async function startBed(n){
   if(!buf||!soundOn||b.src) return;                  // already playing -> never a second copy
   b.src=ctx.createBufferSource(); b.src.buffer=buf; b.src.loop=true; b.src.connect(b.gain); b.src.start();
 }
+function stopSong(){ if(song.src){ song.src.onended=null; try{song.src.stop()}catch(e){} song.src=null; } }
+async function playSong(i, from=0){                  // one song at a time; at its end the next one starts
+  stopSong(); song.i=(i+SONGS.length)%SONGS.length; song.off=from; showSong();
+  const want=song.i, buf=await load('songs/'+SONGS[want][0]);
+  if(!soundOn||want!==song.i||song.src) return;
+  if(!buf){ playSong(want+1); return; }              // a missing take just skips
+  const s=ctx.createBufferSource(); s.buffer=buf; s.connect(BED.musica.gain); s.start(0,from);
+  song.src=s; song.at=ctx.currentTime-from; s.onended=()=>{ if(song.src===s){ song.src=null; playSong(song.i+1); } };
+}
 function sound(on){
-  soundOn=on; document.querySelectorAll('[data-sound]').forEach(x=>x.setAttribute('aria-pressed',on));
+  soundOn=on; document.querySelectorAll('[data-sound]').forEach(x=>x.setAttribute('aria-pressed',on)); showSong();
   if(!ctx){ ctx=new (window.AudioContext||window.webkitAudioContext)();
     for(const n in BED){ BED[n].gain=ctx.createGain(); BED[n].gain.gain.value=0; BED[n].gain.connect(ctx.destination); } }
   clearTimeout(stopT); clearTimeout(lifeT);
-  if(on){ ctx.resume(); startBed('ondas'); startBed('musica'); level('ondas',MIX.ondas); level('musica',MIX.musica);
+  if(on){ ctx.resume(); startBed('ondas'); if(!song.src) playSong(song.i, song.off); level('ondas',MIX.ondas); level('musica',MIX.musica);
     lifeT=setTimeout(lifeOnce,3000); }                 // first gull/kids soon after tapping
-  else { level('ondas',0,.8); level('musica',0,.8);
-    stopT=setTimeout(()=>{ for(const n in BED){ const b=BED[n]; if(b.src){ b.src.stop(); b.src=null; } } },900); }
+  else { if(song.src) song.off=Math.max(0,ctx.currentTime-song.at); level('ondas',0,.8); level('musica',0,.8);
+    stopT=setTimeout(()=>{ const b=BED.ondas; if(b.src){ b.src.stop(); b.src=null; } stopSong(); },900); }
 }
-document.querySelectorAll('[data-sound]').forEach(x=>x.onclick=()=>sound(!soundOn));
+// mini player: hover ♪ (or tap it on a phone) -> ⏮ ▶/⏸ ⏭ + song name; tucks away 1.5 s after the pointer leaves
+const MP=document.createElement('div'); MP.className='mp'; MP.setAttribute('role','group'); MP.setAttribute('aria-label','Música');
+MP.innerHTML='<small>Música</small><b id="mpT"></b><div><button data-mp="-1" aria-label="Anterior">⏮</button><button data-mp="0" id="mpP" aria-label="Tocar ou pausar">▶</button><button data-mp="1" aria-label="Próxima">⏭</button></div>';
+document.body.appendChild(MP);
+function showSong(){ $('mpT').textContent=`${song.i+1}/${SONGS.length} · ${SONGS[song.i][1]}`; $('mpP').textContent=soundOn?'⏸':'▶'; }
+let mpT=null;
+function openMP(btn){ clearTimeout(mpT); const r=btn.getBoundingClientRect(), up=r.top>innerHeight/2;
+  MP.style.left=Math.min(innerWidth-MP.offsetWidth-12, Math.max(12, r.left+r.width/2-MP.offsetWidth/2))+'px';
+  MP.style.top=(up? r.top-MP.offsetHeight-10 : r.bottom+10)+'px'; MP.classList.add('on'); showSong(); }
+const closeMP=(ms=1500)=>{ clearTimeout(mpT); mpT=setTimeout(()=>MP.classList.remove('on'),ms); };
+MP.onmouseenter=()=>clearTimeout(mpT); MP.onmouseleave=()=>closeMP();
+MP.onclick=e=>{ const d=e.target.dataset.mp; if(d===undefined) return; clearTimeout(mpT);
+  if(d==='0') sound(!soundOn); else { if(!soundOn){ song.i=(song.i+(+d)+SONGS.length)%SONGS.length; song.off=0; sound(true); } else { level('musica',MIX.musica,.3); playSong(song.i+(+d)); } }
+  showSong(); if(matchMedia('(hover:none)').matches) closeMP(4000); };
+document.querySelectorAll('[data-sound]').forEach(x=>{
+  x.onmouseenter=()=>openMP(x); x.onmouseleave=()=>closeMP();
+  x.onclick=()=>{ sound(!soundOn); openMP(x); if(matchMedia('(hover:none)').matches) closeMP(4000); };
+});
 // beach life, at random times so it never repeats the same way: gulls now and then, kids far away
 const LIFE=[['gaivota-1',.35],['gaivota-2',.32],['criancas-1',.28],['criancas-2',.26],['criancas-3',.28],['criancas-4',.26],['criancas-c1',.3],['criancas-c2',.3],['criancas-c3',.3]];
 async function lifeOnce(){
