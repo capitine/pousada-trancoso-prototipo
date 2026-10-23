@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ouvir as músicas</title>
+<style>
+:root{--paper:#f6efe2;--night:#14110f;--coral:#e0684b;--gold:#d9b46a;--muted:#b9ad9b}
+*{box-sizing:border-box;margin:0}
+body{background:var(--night);color:var(--paper);font:400 16px/1.5 system-ui,sans-serif;padding:20px 16px 60px;max-width:640px;margin:0 auto}
+h1{font:600 26px Georgia,serif;margin-bottom:4px}
+.lead{color:var(--muted);font-size:14px;margin-bottom:20px}
+section{border-top:1px solid rgba(246,239,226,.15);padding:16px 0}
+h2{font:600 19px Georgia,serif}
+h2 i{font:400 13px system-ui;color:var(--gold);font-style:normal;margin-left:6px;letter-spacing:.05em;text-transform:uppercase}
+p{color:var(--muted);font-size:14px;margin:2px 0 10px}
+.take{display:flex;align-items:center;gap:10px;margin:6px 0}
+.take b{width:22px;color:var(--coral)}
+audio{flex:1;width:100%;height:40px}
+</style>
+</head>
+<body>
+<h1>Ouvir as músicas</h1>
+<p class="lead">Músicas novas para o site da Pousada Trancoso. Cada uma tem duas versões (A e B). Ouça e me diga qual fica e qual sai.</p>
+<main id="list"></main>
+<script>
+// one row per song: [run, title, style, what it's about, has two takes]
+const S=[
+ ['PT-013','Areia Preta','axé','Um dia inteiro de praia: areia preta, água de coco, frescobol, aplauso pro pôr do sol.',1],
+ ['PT-014','Domingo de Roda','pagode','A roda de samba de domingo às 15h, piscina e pula-pula.',1],
+ ['PT-015','Luz de Velas','bossa · cantada','As noites românticas: jantar à luz de velas, suíte decorada, hidro.',1],
+ ['PT-016','Moqueca É Capixaba','baião','A comida: panela de barro, moqueca, lagosta, festival de caranguejo.',1],
+ ['PT-017','Mais Um Pouquinho','pagode','Amigos que dizem que vão embora e ficam a tarde inteira.',1],
+ ['PT-018','Tempo Pra Nós Dois','bossa · MPB','Um casal que volta a se ouvir numa tarde calma em Setiba.',1],
+ ['PT-019','Cabe Mais Um','axé','Alguém chega sozinho, é chamado pra roda e depois recebe o próximo.',1],
+ ['PT-020','Na Sombra da Castanheira','samba-canção','Um homem volta a Setiba com o filho e a mãe, na sombra da castanheira.',1],
+ ['PT-021','Na Sombra da Castanheira · o refrão abre','samba-canção','A mesma história, com o refrão reescrito.',1],
+ ['um-pouquinho-mais','Um Pouquinho Mais','—','Baixada por você; não achei o registro desta.',0]];
+document.getElementById('list').innerHTML=S.map(([id,t,st,txt,two])=>`<section><h2>${t}<i>${st}</i></h2><p>${txt}</p>`+
+  (two?['A','B'].map(x=>`<div class="take"><b>${x}</b><audio controls preload="none" src="${id}-${x}.mp3"></audio></div>`).join('')
+      :`<div class="take"><b>·</b><audio controls preload="none" src="${id}.mp3"></audio></div>`)+'</section>').join('');
+// only one plays at a time
+document.addEventListener('play',e=>document.querySelectorAll('audio').forEach(a=>{ if(a!==e.target) a.pause() }),true);
+</script>
+</body>
+</html>
