@@ -463,7 +463,7 @@ MP.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; const d=b.dat
   if(d==='beach') setBeach(!BEACH);
   else if(d==='list'){ const on=MP.classList.toggle('list'); b.setAttribute('aria-expanded',on); openMP(mpBtn); }
   else if(b.dataset.i) pick(+b.dataset.i);
-  else if(d==='0') sound(!soundOn); else pick(song.i+(+d));
+  else if(d==='0'){ if(!justWoke()) sound(!soundOn); } else pick(song.i+(+d));
   showSong(); };
 // Mouse: hover ♪ shows the player, click ♪ = play/pause. Phone (no hover): tap ♪ only opens/closes the player, the
 // buttons inside do the rest, and it stays open until a tap outside (Joel: a tap that both toggles and pops up is confusing).
@@ -473,9 +473,17 @@ document.querySelectorAll('.lyric').forEach(b=>b.onclick=()=>{ const i=SONGS.fin
 document.querySelectorAll('[data-sound]').forEach(x=>{
   x.insertAdjacentHTML('beforeend','<i class="eq" aria-hidden="true"><b></b><b></b><b></b></i>');   // tiny bars: dance while music plays
   x.onmouseenter=()=>{ if(!touch) openMP(x) }; x.onmouseleave=()=>{ if(!touch) closeMP() };
-  x.onclick=()=>{ if(!touch){ sound(!soundOn); openMP(x); } else if(MP.classList.contains('on')&&mpBtn===x) MP.classList.remove('on'); else openMP(x); };
+  x.onclick=()=>{ if(!touch){ if(!justWoke()) sound(!soundOn); openMP(x); } else if(MP.classList.contains('on')&&mpBtn===x) MP.classList.remove('on'); else openMP(x); };
 });
 addEventListener('pointerdown',e=>{ if(touch&&MP.classList.contains('on')&&!e.target.closest('.mp,[data-sound]')) MP.classList.remove('on'); });
+// Sound starts ON when the page loads (Joel, Oct 22: for showing the cousins; revisit before going public — maybe off or quieter).
+// Browsers keep a page silent until the visitor's first tap, click or key, so it becomes audible on that first touch.
+// A first click on ♪ or ▶ only wakes the sound instead of switching it straight back off.
+let wokeAt=0; const justWoke=()=>performance.now()-wokeAt<800;
+function wake(){ if(!ctx) return; if(ctx.state!=='running'){ wokeAt=performance.now(); ctx.resume(); }
+  if(soundOn&&ctx.state==='running'||!soundOn) ['pointerdown','touchend','keydown'].forEach(t=>removeEventListener(t,wake,true)); }
+['pointerdown','touchend','keydown'].forEach(t=>addEventListener(t,wake,true));
+sound(true);
 // beach life, at random times so it never repeats the same way: gulls now and then, kids far away
 // kids 35% quieter than before (Joel, Oct 22: "the kids screaming are a little loud")
 const LIFE=[['gaivota-1',.35],['gaivota-2',.32],['criancas-1',.18],['criancas-2',.17],['criancas-3',.18],['criancas-4',.17],['criancas-c1',.2],['criancas-c2',.2],['criancas-c3',.2]];
