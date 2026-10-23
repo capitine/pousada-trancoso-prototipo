@@ -250,7 +250,7 @@ function fitOf(c,u=.5){            // cover the screen with 14% spare so camera 
   let sx=1,sy=1; if(sa<ia) sx=sa/ia; else sy=ia/sa; sx/=M; sy/=M;
   // Phone (tall screen) shows only a slice of a wide photo, so the crop glides sideways across it while you read
   // and the cards drop (Joel: "see the Heineken, then the beer glass"). Wide screens already see the whole photo.
-  const sw=sa<1?(c.sweep??(CH.indexOf(c)%2?-1:1)):0;
+  const sw=sa<1?(c.sweep||0):0;   // only chapters that ask for it (Joel: just the beer table; the others keep the 3D zoom/fall)
   return [sx,sy,clamp(c.fx-.5+sw*(u-.5)*(1-sx)*.8,-(1-sx)/2+.02,(1-sx)/2-.02),clamp(c.fy-.5,-(1-sy)/2+.02,(1-sy)/2-.02)];
 }
 function bind(c,unit){ gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D,c.t); gl.activeTexture(gl.TEXTURE0+unit+1); gl.bindTexture(gl.TEXTURE_2D,c.d) }
