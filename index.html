@@ -152,10 +152,12 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 
 <script>
 // fx/fy: where to keep the crop on a tall phone screen (0..1 across the photo). pan: sideways camera travel over the scene.
+// Joel, Oct 22 (phone): slide + zoom on the beach (02), more zoom on sunset (05) and Réveillon (07), slide on the party (06),
+// slide on the beer table (04); the rest keep the plain 3D zoom/fall. dive = how far the camera falls in (default .10).
 const CH = [
   {img:'01-amanhecer', fx:.5, fy:.5, pan:[.05,0], side:'left', hero:true, k:'Setiba · Guarapari · ES', short:'Pousada Trancoso',
    lyric:'Vem pro Trancoso, vem! Tira o pé do chão', h:'Pousada Trancoso', tag:'O dia começa a poucos passos do mar', p:'Pousada e restaurante de família no litoral do Espírito Santo.'},
-  {img:'02-setiba', fx:.42, fy:.5, pan:[-.05,0], side:'right', k:'A praia', short:'Praia e piscina',
+  {img:'02-setiba', fx:.42, fy:.5, pan:[-.05,0], dive:.25, sweep:1, side:'right', k:'A praia', short:'Praia e piscina',
    cards:[['v-piscina','A piscina'],['v-cafe','Café da manhã'],['v-praia','Setiba vista do alto']],
    lyric:'O sol abriu lá em Setiba, o mar azul chamando pra brincar', h:'Praia, piscina e café da manhã', p:'Duas piscinas, área de lazer ao ar livre e café da manhã incluso. A praia de Setiba fica logo ali.'},
   {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['v-quadriciclo','Passeio de quadriciclo'],['v-dunas','Pelas dunas da restinga'],['ig-familia','Fim de semana em família']],
@@ -166,14 +168,14 @@ const CH = [
    cards:[['v-moqueca','Moqueca de cação capixaba'],['v-risoto','Risoto de camarão'],['v-cacao','Cação ao molho de camarão'],['v-almoco','Almoço à beira da piscina'],['fb-festival','Festival lagosta e caranguejo']],
    lyric:'Moqueca é capixaba, o resto é peixada!', lsong:'PT-016-B', h:'Moqueca, lagosta e caranguejo', p:'Moqueca capixaba de cação, moqueca de lagosta, risoto de camarão e o festival de caranguejo, servidos à beira da piscina no Restaurante Trancoso.',
    note:'Preços dos anúncios antigos · confirmar com a pousada'},
-  {img:'05-por-do-sol-setiba', fx:.5, fy:.5, pan:[-.04,0], side:'left', k:'Sexta-feira romântica', short:'Sexta romântica',
+  {img:'05-por-do-sol-setiba', fx:.5, fy:.5, pan:[-.04,0], dive:.3, side:'left', k:'Sexta-feira romântica', short:'Sexta romântica',
    cards:[['ig-romantica','Suíte decorada'],['v-jantar','Jantar à luz de velas'],['fb-hidro','Hidro à noite'],['fb-varanda','Petiscos na varanda']],
    lyric:'À luz de velas, Setiba é só nossa', lsong:'PT-015-B', h:'Quando o sol se põe, a mesa é só de vocês', p:'Suíte decorada, jantar à luz de velas e café da manhã no dia seguinte.',
    price:[['R$ 350','Por casal']]},
-  {img:'06-salao', fx:.45, fy:.55, pan:[.04,-.02], side:'right', k:'Noites temáticas', short:'Baile e karaokê',
+  {img:'06-salao', fx:.45, fy:.55, pan:[.04,-.02], sweep:1, side:'right', k:'Noites temáticas', short:'Baile e karaokê',
    cards:[['fb-karaoke','Noite de karaokê'],['v-karaoke','Karaokê com animador'],['v-pista','Baile Flashback'],['v-cantor','Show ao vivo']],
    lyric:'De noite tem karaokê, tem baile', h:'Baile Retrô, flashback e karaokê', p:'Noite de karaokê com entrada liberada, bailes de anos 60, 80 e 90 e shows ao vivo. Quem veio, aprovou.'},
-  {img:'00-restinga', fx:.42, fy:.55, pan:[0,-.04], side:'bottom', k:'Réveillon 2027', short:'Réveillon', cards:[['v-fogos','Queima de fogos'],['v-ceia','Ceia da virada'],['ig-reveillon','Réveillon Guarapari']],
+  {img:'00-restinga', fx:.42, fy:.55, pan:[0,-.04], dive:.25, side:'bottom', k:'Réveillon 2027', short:'Réveillon', cards:[['v-fogos','Queima de fogos'],['v-ceia','Ceia da virada'],['ig-reveillon','Réveillon Guarapari']],
    lyric:'E fogos no céu pra gente comemorar', h:'Vire o ano com os pés na areia', p:'5 dias e 4 noites, show ao vivo, queima de fogos e mesa reservada para a virada.',
    price:[['5x R$ 600','Até 4 pessoas'],['Café','Incluso']], cta:true},
 ];
