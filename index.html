@@ -408,7 +408,7 @@ function setBeach(on){ BEACH=on; try{ localStorage.setItem('pt-beach',on?'1':'0'
   const b=MP.querySelector('[data-mp="beach"]'); b.setAttribute('aria-pressed',on); b.textContent='🌊 Sons da praia: '+(on?'ligados':'desligados');
   if(soundOn){ level('ondas',on?MIX.ondas:0,.6); if(!on) hushLife(); } }
 // master volume (Joel: "the player is missing a volume button"); remembered per viewer, squared so the slider feels even
-const QUIET=.35;   // Joel, Oct 22: 30% quieter, then another 50% ("really lower"); on top of the slider
+const QUIET=.245;   // Joel, Oct 22: 30% quieter, another 50%, another 30% ("still too loud"); on top of the slider
 let VOL=.8; try{ const v=localStorage.getItem('pt-vol'); if(v!==null) VOL=+v; }catch(e){}
 const BUF={}, BED={ondas:{}, musica:{}}, ALIVE=new Set();   // ALIVE: kids/gull clips playing right now
 const song={i:0, src:null, at:0, off:0};        // current track, when it started, where it was paused
