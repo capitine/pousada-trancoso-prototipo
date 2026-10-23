@@ -192,24 +192,21 @@ const CH = [
    cards:[['q-chales','Chalés com varanda e churrasqueira'],['q-casal','Suíte de casal'],['q-varanda','Varanda com rede'],['q-familia','Quarto família · casal + beliche'],['q-ar','Ar-condicionado e TV']],   // Joel: chalés first, outdoor/indoor alternate so it isn't room after room
    h:'Quartos para casal e família', p:'Seu descanso a poucos passos da praia. Temos suítes para casais, quartos para famílias com cama de casal e beliches, opções com varanda e chalés com varanda e churrasqueira. Roupa de cama 400 fios, toalhas e café da manhã incluso.',   // Fabiano's own text (Oct 23)
    note:'Fotos do anúncio da pousada no Hotels.com'},
-  {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['v-quadriciclo','Passeio de quadriciclo'],['v-dunas','Pelas dunas da restinga'],['ig-familia','Fim de semana em família']],
-   lyric:'De quadriciclo pela restinga', h:'Quadriciclo, lagoa e restinga', p:'Passeio de quadriciclo pela região do Parque Paulo César Vinha, onde a lagoa de água escura encontra o mar.',
-   price:[['R$ 400','Casal, com café'],['R$ 490','Casal + 1 filho']], note:'Fim de semana em família · outubro a dezembro, sexta a domingo'},
+  // Aventura: Fabiano's aerial of the lagoon meeting the sea (Oct 23) — dark-water lagoon + restinga, so it reads differently from the beach chapters
+  {img:'03-lagoa-mar', fx:.5, fy:.6, pan:[0,.05], dive:.35, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['v-quadriciclo','Passeio de quadriciclo'],['v-dunas','Pelas dunas da restinga'],['ig-familia','Fim de semana em família']],
+   lyric:'De quadriciclo pela restinga', h:'Quadriciclo, lagoa e restinga', p:'Passeio de quadriciclo pela região do Parque Paulo César Vinha, onde a lagoa de água escura encontra o mar.',},
   // sweep -1: on a phone the crop starts on the Heineken (right) and glides to the beer glass (left)
   {img:'04-mesa-pousada', fx:.5, fy:.72, pan:[.03,-.02], sweep:-1, side:'left', k:'Restaurante Trancoso', short:'Moqueca e frutos do mar',
    cards:[['v-moqueca','Moqueca de cação capixaba'],['v-risoto','Risoto de camarão'],['v-cacao','Cação ao molho de camarão'],['v-almoco','Almoço à beira da piscina'],['fb-festival','Festival lagosta e caranguejo']],
-   lyric:'Moqueca é capixaba, o resto é peixada!', lsong:'PT-016-B', h:'Moqueca, lagosta e caranguejo', p:'Moqueca capixaba de cação, moqueca de lagosta, risoto de camarão e o festival de caranguejo, servidos à beira da piscina no Restaurante Trancoso.',
-   note:'Preços dos anúncios antigos · confirmar com a pousada'},
+   lyric:'Moqueca é capixaba, o resto é peixada!', lsong:'PT-016-B', h:'Moqueca, lagosta e caranguejo', p:'Moqueca capixaba de cação, moqueca de lagosta, risoto de camarão e o festival de caranguejo, servidos à beira da piscina no Restaurante Trancoso.',},
   {img:'05-por-do-sol-setiba', fx:.5, fy:.5, pan:[-.04,0], dive:.3, side:'left', k:'Sexta-feira romântica', short:'Sexta romântica',
    cards:[['ig-romantica','Suíte decorada'],['v-jantar','Jantar à luz de velas'],['fb-hidro','Hidro à noite'],['fb-varanda','Petiscos na varanda']],
-   lyric:'À luz de velas, Setiba é só nossa', lsong:'PT-015-B', h:'Quando o sol se põe, a mesa é só de vocês', p:'Suíte decorada, jantar à luz de velas e café da manhã no dia seguinte.',
-   price:[['R$ 350','Por casal']]},
-  {img:'06-salao', fx:.45, fy:.55, pan:[.04,-.02], sweep:1, side:'right', k:'Noites temáticas', short:'Baile e karaokê',
+   lyric:'À luz de velas, Setiba é só nossa', lsong:'PT-015-B', h:'Quando o sol se põe, a mesa é só de vocês', p:'Suíte decorada, jantar à luz de velas e café da manhã no dia seguinte.',},
+  {img:'06-salao', fx:.45, fy:.55, pan:[.04,-.02], sweep:1, side:'right', k:'Bar & Restaurante Trancoso', short:'Noites temáticas',
    cards:[['fb-karaoke','Noite de karaokê'],['v-karaoke','Karaokê com animador'],['v-pista','Baile Flashback'],['v-cantor','Show ao vivo']],
-   lyric:'De noite tem karaokê, tem baile', h:'Baile Retrô, flashback e karaokê', p:'Noite de karaokê com entrada liberada, bailes de anos 60, 80 e 90 e shows ao vivo. Quem veio, aprovou.'},
+   lyric:'De noite tem karaokê, tem baile', h:'Noites temáticas', p:'Cada noite um clima diferente: noite Flashback, roda de sertanejo, roda de samba e karaokê com animador.'},   // Fabiano: a theme-nights cover, not just 'baile retrô'
   {img:'00-restinga', fx:.42, fy:.55, pan:[0,-.04], dive:.25, side:'bottom', k:'Réveillon 2027', short:'Réveillon', cards:[['v-fogos','Queima de fogos'],['v-ceia','Ceia da virada'],['ig-reveillon','Réveillon Guarapari']],
-   lyric:'E fogos no céu pra gente comemorar', h:'Vire o ano com os pés na areia', p:'5 dias e 4 noites, show ao vivo, queima de fogos e mesa reservada para a virada.',
-   price:[['5x R$ 600','Até 4 pessoas'],['Café','Incluso']], cta:true},
+   lyric:'E fogos no céu pra gente comemorar', h:'Vire o ano com os pés na areia', p:'5 dias e 4 noites, show ao vivo, queima de fogos e mesa reservada para a virada.', cta:true},
 ];
 // Route lengths in screen-heights (sn-motion-html: scene 4.6 / connector 1.2; shorter here because phones swipe less)
 // A chapter = text in (IN) → one stop per photo card that drops onto the screen (CARD each) → text + cards out (OUT).
