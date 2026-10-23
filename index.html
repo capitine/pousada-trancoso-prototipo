@@ -29,7 +29,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .hero p{max-width:520px;margin:0 auto}
 .veil{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;text-align:center;opacity:0;color:#5b4a2c}
 .veil::before{content:"";position:absolute;inset:-90px -140px;z-index:-1;background:radial-gradient(closest-side,rgba(246,239,226,.9),rgba(246,239,226,.5) 60%,rgba(246,239,226,0))}
-@media (max-width:760px){.hero{top:40%!important;bottom:auto!important}.hero .mark{--s:68px}.hero .kicker{justify-content:center}}
+@media (max-width:760px){.hero{top:40%!important;bottom:auto!important;text-align:center!important}.hero .mark{--s:68px}.hero .kicker{justify-content:center}}
 .veil .mark{--s:96px;margin:0 auto 12px;border-color:#b8955a;color:#b8955a}
 .veil b{display:block;font:600 clamp(28px,4vw,52px) Fraunces,serif;letter-spacing:.02em}
 .veil small{font-size:11px;letter-spacing:.3em;text-transform:uppercase}
@@ -61,8 +61,7 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 .price div{border-top:1px solid var(--coral);padding-top:6px;font-size:12px;color:var(--muted)}
 .price strong{display:block;font:600 24px Fraunces,serif;color:#fff}
 .cta{display:inline-block;margin-top:18px;background:var(--coral);color:#fff;text-decoration:none;padding:12px 20px;border-radius:99px;font-weight:500;text-shadow:none}
-.lyric{display:block;margin:12px 0 0;padding:0;background:none;border:0;color:var(--gold,#d9b26a);font:italic 400 15px Fraunces,serif;text-align:left;cursor:pointer;text-shadow:inherit}
-.hero .lyric{text-align:center;margin-left:auto;margin-right:auto}
+.lyric{display:block;width:100%;margin:12px 0 0;padding:0;background:none;border:0;color:var(--gold,#d9b26a);font:italic 400 15px Fraunces,serif;text-align:inherit;cursor:pointer;text-shadow:inherit}
 .lyric:hover{text-decoration:underline;text-underline-offset:3px}
 .note{font-size:12px!important;color:var(--muted)!important;margin-top:10px;font-style:italic}
 .polaroid{position:fixed;width:min(200px,16vw);background:#fbf8f2;padding:8px 8px 30px;box-shadow:0 18px 50px rgba(0,0,0,.45);opacity:0;z-index:2;pointer-events:none;will-change:transform,opacity}
@@ -181,7 +180,8 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 // Joel, Oct 22 (phone): slide + zoom on the beach (02), more zoom on sunset (05) and Réveillon (07), slide on the party (06),
 // slide on the beer table (04); the rest keep the plain 3D zoom/fall. dive = how far the camera falls in (default .10).
 const CH = [
-  {img:'01-amanhecer', fx:.5, fy:.5, pan:[.05,0], side:'left', hero:true, k:'Setiba · Guarapari · ES', short:'Pousada Trancoso',
+  // cover: Fabiano's aerial of the beach in front of the pousada (Oct 23), falling-from-the-sky zoom
+  {img:'01-praia-frente', fx:.5, fy:.5, pan:[.02,0], dive:.3, side:'left', hero:true, k:'Setiba · Guarapari · ES', short:'Pousada Trancoso',
    lyric:'Vem pro Trancoso, vem! Tira o pé do chão', h:'Pousada Trancoso', tag:'A poucos passos da praia', p:'Gastronomia capixaba e noites temáticas.'},
   {img:'02-setiba', fx:.42, fy:.5, pan:[-.05,0], dive:.25, sweep:1, side:'right', k:'A praia', short:'Praia e piscina',
    cards:[['v-piscina','A piscina'],['v-cafe','Café da manhã'],['v-praia','Setiba vista do alto']],
