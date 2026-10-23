@@ -113,6 +113,7 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 /* ☰ opens the song list under the controls */
 .mp ol{display:none;list-style:none;margin:10px 0 0;padding:8px 0 0;border-top:1px solid rgba(246,239,226,.15);max-height:min(46vh,340px);overflow-y:auto}
 .mp.list ol{display:block}
+.mp{max-width:calc(100vw - 24px)}.mp ol b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mp ol em{flex:none}   /* long names never push the panel off a phone screen */
 .mp ol button{width:100%;height:auto;border:0;border-radius:8px;background:none;display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 8px;text-align:left}
 .mp ol b{margin:0;font-size:13px}.mp ol em{font:400 10px Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-style:normal;white-space:nowrap}
 .mp ol button.now{background:rgba(246,239,226,.12)}.mp ol button.now b{color:var(--coral)}
@@ -449,9 +450,9 @@ function sound(on){
     stopT=setTimeout(()=>{ const b=BED.ondas; if(b.src){ b.src.stop(); b.src=null; } stopSong(); },900); }
 }
 // mini player: hover ♪ (or tap it on a phone) -> ⏮ ▶/⏸ ⏭ + song name; tucks away 1.5 s after the pointer leaves
-const MP=document.createElement('div'); MP.className='mp'; MP.setAttribute('role','group'); MP.setAttribute('aria-label','Música');
+const MP=document.createElement('div'); MP.className='mp list';   // song list open by default (Joel: people may miss the ☰) MP.setAttribute('role','group'); MP.setAttribute('aria-label','Música');
 MP.innerHTML='<small id="mpS">Música</small><b id="mpT"></b><div><button data-mp="-1" aria-label="Anterior">⏮</button><button data-mp="0" id="mpP" aria-label="Tocar ou pausar">▶</button><button data-mp="1" aria-label="Próxima">⏭</button>'+
-  '<button data-mp="list" aria-label="Lista de músicas" aria-expanded="false">☰</button></div>'+
+  '<button data-mp="list" aria-label="Lista de músicas" aria-expanded="true">☰</button></div>'+
   '<div class="opt"><button data-mp="beach" class="beach"></button></div>'+
   `<label class="vol"><span aria-hidden="true">🔈</span><input id="mpV" type="range" min="0" max="1" step="0.01" value="${VOL}" aria-label="Volume"></label>`+
   '<ol id="mpL">'+SONGS.map(([,n,s],i)=>`<li><button data-i="${i}"><b>${n}</b><em>${s}</em></button></li>`).join('')+'</ol>';
