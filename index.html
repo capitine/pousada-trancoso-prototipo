@@ -187,6 +187,11 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
   <p style="margin-top:18px;font-size:11px;line-height:1.5;color:#a89c8f">Protótipo não oficial. Créditos: fotos da Pousada Trancoso (Instagram/Facebook) e Wikimedia Commons — Marcelo Moryan, Vitor Jubini e outros autores (CC BY-SA). Músicas: Suno (protótipo), a partir de ritmos brasileiros escritos por nós. Sons: ondas e crianças da biblioteca Sound Ideas (curso de áudio); gaivota XC707075 (CC0); crianças: “Douzen kids on playground” (domínio público) e “Ambient sound children playing in a park” (CC BY-SA 4.0).</p></nav></div>
 
 <script>
+// Freshness check (Joel: a refresh must always show the latest fix). deploy.sh stamps SITE_VERSION and version.txt;
+// if this copy is older than what's live (a cached page), reload once.
+const SITE_VERSION='20261023170047';
+if(SITE_VERSION!=='dev') fetch('version.txt?'+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(v=>{ v=v.trim();
+  try{ if(v&&v!==SITE_VERSION&&sessionStorage.getItem('pt-reloaded')!==v){ sessionStorage.setItem('pt-reloaded',v); location.reload(); } }catch(e){} }).catch(()=>{});
 // fx/fy: where to keep the crop on a tall phone screen (0..1 across the photo). pan: sideways camera travel over the scene.
 // Joel, Oct 22 (phone): slide + zoom on the beach (02), more zoom on sunset (05) and Réveillon (07), slide on the party (06),
 // slide on the beer table (04); the rest keep the plain 3D zoom/fall. dive = how far the camera falls in (default .10).
