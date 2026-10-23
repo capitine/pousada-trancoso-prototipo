@@ -273,7 +273,9 @@ const els=CH.map((c,i)=>{
     const p=document.createElement('figure'); p.className='polaroid'; p.dataset.k=k; p.dataset.r=[-6,5,-3,7][k%4];
     p.style.setProperty('--r',p.dataset.r); p.dataset.src=src; p.onclick=()=>openZoom(p);
     // 'v-' cards are short silent loops cut from their own Facebook reels (Joel: "bring videos in as GIFs")
-    const media=src.startsWith('v-')?`<video src="${(window.VID&&VID[src])||`vid/${src}.mp4`}" muted loop playsinline autoplay preload="auto" aria-label="${cap}"></video>`
+    // video loads only when its chapter is near and shows a still frame (poster) until it plays: Android Chrome runs
+    // only a few videos at once, and with all 16 loading up front some cards stayed blank (Joel's phone)
+    const media=src.startsWith('v-')?`<video data-src="${(window.VID&&VID[src])||`vid/${src}.mp4`}" poster="${PHOTO('poster-'+src)}" muted loop playsinline preload="none" aria-label="${cap}"></video>`
       :`<img src="${PHOTO(src)}" alt="${cap}">`;
     p.innerHTML=`${media}<span>${cap}</span>`; document.body.appendChild(p); return p;
   });
@@ -331,7 +333,7 @@ function openZoom(p){
   const w=p.offsetWidth, h=p.offsetHeight, k=Math.min(innerHeight*.74/h,innerWidth*.86/w);
   const big=`translate(${innerWidth/2-p.offsetLeft-w/2}px,${innerHeight/2-p.offsetTop-h/2}px) rotate(0deg) scale(${k})`;
   c.offsetHeight; c.style.transition=''; c.style.transform=big;
-  const v=p.querySelector('video'), cv=c.querySelector('video'); if(cv){ cv.currentTime=v.currentTime; cv.play().catch(()=>{}); }
+  const v=p.querySelector('video'), cv=c.querySelector('video'); if(cv){ if(!cv.getAttribute('src')) cv.src=cv.dataset.src; cv.muted=true; cv.currentTime=v.currentTime||0; cv.play().catch(()=>{}); }
   const key=p.dataset.src, url=ORIG[key]||(key.startsWith('ig-')?'https://www.instagram.com/pousadatrancoso/':null);
   if(url){ const a=document.createElement('a'); a.className='orig'; a.href=url; a.target='_blank'; a.rel='noopener';
     a.textContent=key.startsWith('ig-')?'Ver no Instagram ↗':'Ver post original ↗'; a.style.top=(innerHeight/2+h*k/2+16)+'px';
@@ -525,7 +527,10 @@ function draw(p){
       const d=clamp((p-(c.start+IN+CARD*k+.04))/(CARD*.85)), e=reduce?ease(d):back(d), r=+q.dataset.r, s=k%2?1:-1;
       q.style.opacity=(Math.min(1,d*5)*o).toFixed(3); q.classList.toggle('live',d>.98&&o>.6);
       const vv=q.querySelector('video'), seen=d>0&&o>.05;      // loops play only while their card is on screen
-      if(vv&&seen&&vv.paused) vv.play().catch(()=>{}); else if(vv&&!seen&&!vv.paused) vv.pause();
+      if(vv){ const near=Math.abs(i-active)<=1;
+        if(near&&!vv.getAttribute('src')){ vv.src=vv.dataset.src; vv.muted=true; }
+        else if(!near&&vv.getAttribute('src')){ vv.pause(); vv.removeAttribute('src'); vv.load(); }   // free the decoder
+        if(seen&&vv.paused&&vv.getAttribute('src')) vv.play().catch(()=>{}); else if(!seen&&!vv.paused) vv.pause(); }
       q.style.transform=`translateY(${((1-e)*-75).toFixed(2)}vh) rotate(${(r+s*28*(1-e)).toFixed(2)}deg) scale(${(1+.18*(1-e)).toFixed(3)})`;
       q.style.boxShadow=`0 ${(6+30*(1-d)).toFixed(0)}px ${(18+50*(1-d)).toFixed(0)}px rgba(0,0,0,${(.55-.25*(1-d)).toFixed(2)})`;
     });
