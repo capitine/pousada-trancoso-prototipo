@@ -118,6 +118,11 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 .mp ol b{margin:0;font-size:13px}.mp ol em{font:400 10px Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-style:normal;white-space:nowrap}
 .mp ol button.now{background:rgba(246,239,226,.12)}.mp ol button.now b{color:var(--coral)}
 .bar{display:none}
+.tap{position:fixed;left:50%;bottom:90px;translate:-50% 0;z-index:7;display:none;padding:12px 20px;border-radius:99px;border:0;
+  background:var(--coral);color:#fff;font:500 14px Inter,sans-serif;letter-spacing:.04em;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.4);animation:tapPulse 1.8s ease-in-out infinite}
+.tap.on{display:block}
+@keyframes tapPulse{50%{scale:1.05}}
+@media (max-width:760px){.tap{bottom:calc(150px + env(safe-area-inset-bottom))}}
 .hint{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.18em;text-transform:uppercase;z-index:4;transition:opacity .8s;text-align:center;pointer-events:none}
 .hint i{display:block;width:1px;height:34px;margin:8px auto 0;background:linear-gradient(var(--paper),transparent);animation:drip 2.2s ease-in-out infinite}
 @keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
@@ -437,7 +442,7 @@ async function playSong(i, from=0){                  // one song at a time; at i
   song.src=s; song.at=ctx.currentTime-from; s.onended=()=>{ if(song.src===s){ song.src=null; playSong(song.i+1); } };
 }
 function sound(on){
-  soundOn=on; document.querySelectorAll('[data-sound]').forEach(x=>x.setAttribute('aria-pressed',on)); showSong();
+  soundOn=on; document.querySelectorAll('[data-sound]').forEach(x=>x.setAttribute('aria-pressed',on)); showSong(); try{showTap()}catch(e){}
   if(!ctx){ ctx=new (window.AudioContext||window.webkitAudioContext)();
     MASTER=ctx.createGain(); MASTER.gain.value=VOL*VOL*QUIET; MASTER.connect(ctx.destination);
     for(const n in BED){ BED[n].gain=ctx.createGain(); BED[n].gain.gain.value=0; BED[n].gain.connect(MASTER); } }
@@ -490,10 +495,19 @@ addEventListener('pointerdown',e=>{ if(touch&&MP.classList.contains('on')&&!e.ta
 // Browsers keep a page silent until the visitor's first tap, click or key, so it becomes audible on that first touch.
 // A first click on ♪ or ▶ only wakes the sound instead of switching it straight back off.
 let wokeAt=0; const justWoke=()=>performance.now()-wokeAt<800;
-function wake(){ if(!ctx) return; if(ctx.state!=='running'){ wokeAt=performance.now(); ctx.resume(); }
-  if(soundOn&&ctx.state==='running'||!soundOn) ['pointerdown','touchend','keydown'].forEach(t=>removeEventListener(t,wake,true)); }
-['pointerdown','touchend','keydown'].forEach(t=>addEventListener(t,wake,true));
-sound(true);
+// Phones only count some touches as "the visitor allowed sound": a swipe often doesn't, a tap's pointerup/touchend/click
+// does. Listen to all of them, and show a clear "Toque para ouvir" button until sound is really running
+// (Joel's cousin heard no music on the first test).
+const WAKE=['pointerdown','pointerup','touchend','click','keydown'];
+const tap=document.createElement('button'); tap.className='tap'; tap.textContent='♪ Toque para ouvir a música'; document.body.appendChild(tap);
+const showTap=()=>tap.classList.toggle('on',soundOn&&!!ctx&&ctx.state!=='running');
+function wake(){ if(!ctx) return; if(ctx.state!=='running'){ wokeAt=performance.now(); ctx.resume().then(showTap); }
+  if(soundOn&&ctx.state==='running'||!soundOn) WAKE.forEach(t=>removeEventListener(t,wake,true)); }
+WAKE.forEach(t=>addEventListener(t,wake,true));
+tap.onclick=()=>{ wake(); setTimeout(showTap,300); };
+// iPhone: without this, the ring/silent switch mutes the page's sound
+try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}
+sound(true); ctx.onstatechange=showTap; setTimeout(showTap,600);
 // beach life, at random times so it never repeats the same way: gulls now and then, kids far away
 // kids 35% quieter than before (Joel, Oct 22: "the kids screaming are a little loud")
 const LIFE=[['gaivota-1',.35],['gaivota-2',.32],['criancas-1',.18],['criancas-2',.17],['criancas-3',.18],['criancas-4',.17],['criancas-c1',.2],['criancas-c2',.2],['criancas-c3',.2]];
