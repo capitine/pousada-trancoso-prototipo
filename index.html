@@ -384,7 +384,7 @@ addEventListener('keydown',e=>{
 // Web Audio, not <audio loop>: Joel heard a "washing machine" on the site but not in the file itself — <audio> loops
 // leave a gap at the seam and nothing stops two copies overlapping. Here: one decoded copy, a sample-exact loop,
 // and a bed can only ever be started once.
-const MIX={ondas:.17, vida:1, musica:.3};   // the three levels Joel tunes by ear (open the page with ?mix for sliders)
+const MIX={ondas:.06, vida:.35, musica:.3};   // waves and kids/gulls about a third of before, songs unchanged (Joel, Oct 22)   // the three levels Joel tunes by ear (open the page with ?mix for sliders)
 // Songs: Suno covers of our own Brazilian groove demos. Ordered like an album: samba opens (Joel: start with the most
 // samba/pagode-like), and the two takes of each generation sit five tracks apart since they sound alike. Each take
 // has its own name (places around Guarapari) so no title repeats. [file, name, style]
@@ -408,7 +408,7 @@ function setBeach(on){ BEACH=on; try{ localStorage.setItem('pt-beach',on?'1':'0'
   const b=MP.querySelector('[data-mp="beach"]'); b.setAttribute('aria-pressed',on); b.textContent='🌊 Sons da praia: '+(on?'ligados':'desligados');
   if(soundOn){ level('ondas',on?MIX.ondas:0,.6); if(!on) hushLife(); } }
 // master volume (Joel: "the player is missing a volume button"); remembered per viewer, squared so the slider feels even
-const QUIET=.1;   // Joel, Oct 22: stepped down 1 → .7 → .35 → .245 → .1 ("still too loud on my phone too"); on top of the slider
+const QUIET=.7;   // songs: 30% down (Joel's first ask). His later "lower" asks meant the beach sounds, so those are cut in MIX, not here
 let VOL=.8; try{ const v=localStorage.getItem('pt-vol'); if(v!==null) VOL=+v; }catch(e){}
 const BUF={}, BED={ondas:{}, musica:{}}, ALIVE=new Set();   // ALIVE: kids/gull clips playing right now
 const song={i:0, src:null, at:0, off:0};        // current track, when it started, where it was paused
