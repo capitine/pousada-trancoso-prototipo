@@ -408,6 +408,7 @@ function setBeach(on){ BEACH=on; try{ localStorage.setItem('pt-beach',on?'1':'0'
   const b=MP.querySelector('[data-mp="beach"]'); b.setAttribute('aria-pressed',on); b.textContent='🌊 Sons da praia: '+(on?'ligados':'desligados');
   if(soundOn){ level('ondas',on?MIX.ondas:0,.6); if(!on) hushLife(); } }
 // master volume (Joel: "the player is missing a volume button"); remembered per viewer, squared so the slider feels even
+const QUIET=.7;   // everything 30% quieter (Joel, Oct 22), on top of the slider
 let VOL=.8; try{ const v=localStorage.getItem('pt-vol'); if(v!==null) VOL=+v; }catch(e){}
 const BUF={}, BED={ondas:{}, musica:{}}, ALIVE=new Set();   // ALIVE: kids/gull clips playing right now
 const song={i:0, src:null, at:0, off:0};        // current track, when it started, where it was paused
@@ -435,7 +436,7 @@ async function playSong(i, from=0){                  // one song at a time; at i
 function sound(on){
   soundOn=on; document.querySelectorAll('[data-sound]').forEach(x=>x.setAttribute('aria-pressed',on)); showSong();
   if(!ctx){ ctx=new (window.AudioContext||window.webkitAudioContext)();
-    MASTER=ctx.createGain(); MASTER.gain.value=VOL*VOL; MASTER.connect(ctx.destination);
+    MASTER=ctx.createGain(); MASTER.gain.value=VOL*VOL*QUIET; MASTER.connect(ctx.destination);
     for(const n in BED){ BED[n].gain=ctx.createGain(); BED[n].gain.gain.value=0; BED[n].gain.connect(MASTER); } }
   clearTimeout(stopT); clearTimeout(lifeT);
   if(on){ ctx.resume(); startBed('ondas'); if(!song.src) playSong(song.i, song.off); level('ondas',BEACH?MIX.ondas:0); level('musica',MIX.musica);
@@ -456,7 +457,7 @@ document.body.appendChild(MP);
 function showSong(){ $('mpS').textContent='Música · '+SONGS[song.i][2]; $('mpT').textContent=`${song.i+1}/${SONGS.length} · ${SONGS[song.i][1]}`; $('mpP').textContent=soundOn?'⏸':'▶';
   MP.querySelectorAll('[data-i]').forEach(b=>b.classList.toggle('now',+b.dataset.i===song.i)); }
 setBeach(BEACH);
-$('mpV').oninput=e=>{ VOL=+e.target.value; if(MASTER) MASTER.gain.setTargetAtTime(VOL*VOL,ctx.currentTime,.05);
+$('mpV').oninput=e=>{ VOL=+e.target.value; if(MASTER) MASTER.gain.setTargetAtTime(VOL*VOL*QUIET,ctx.currentTime,.05);
   e.target.previousElementSibling.textContent=VOL<.01?'🔇':VOL<.5?'🔈':'🔊'; try{ localStorage.setItem('pt-vol',VOL) }catch(err){} };
 let mpT=null, mpBtn=null;
 function openMP(btn){ clearTimeout(mpT); mpBtn=btn; const r=btn.getBoundingClientRect(), up=r.top>innerHeight/2;
