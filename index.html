@@ -90,6 +90,12 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 .drawer nav{position:relative;width:min(380px,100%);height:100%;background:#1c1714;padding:22px 20px calc(22px + env(safe-area-inset-bottom));overflow-y:auto;transform:translateX(100%);transition:transform .35s ease}
 .drawer.open nav{transform:none}
 .drawer header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font:600 20px Fraunces,serif}
+/* wide screens: every section as a link across the top, like hotel sites (☰ Menu only on narrower screens) */
+.topnav{display:none;gap:16px}
+.topnav a{color:var(--paper);text-decoration:none;opacity:.78;padding-bottom:3px;border-bottom:1.5px solid transparent;white-space:nowrap}
+.topnav a:hover{opacity:1}.topnav a.on{opacity:1;border-color:var(--gold)}
+@media (min-width:1180px){.topnav{display:flex}.top .pill[data-open],#status{display:none}}
+.pill,.top b{white-space:nowrap}@media (max-width:1050px){#status{display:none}}   /* mid-width screens: nothing wraps */
 .burger{display:none;background:none;border:0;color:var(--paper);font-size:26px;line-height:1;padding:2px 4px}
 .drawer header button{background:none;border:0;font-size:26px;line-height:1;padding:4px 8px}
 .ch{display:flex;gap:14px;align-items:center;width:100%;text-align:left;background:none;border:0;border-radius:10px;padding:8px;margin-bottom:4px}
@@ -159,7 +165,7 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 <div class="flash" id="flash"></div>
 <div class="veil" id="veil"><div class="mark">T</div><b>Pousada Trancoso</b><small>Setiba · Guarapari</small></div>
 <header class="top"><button class="burger" data-open aria-label="Menu">☰</button><b><span class="mark">T</span>Pousada Trancoso</b><span class="status" id="status"></span><span class="status" style="opacity:.55">Protótipo</span>
-  <button class="pill" data-sound aria-pressed="false">♪ Som</button><button class="pill" data-open>☰ Menu</button><a class="pill solid" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar</a></header>
+  <nav class="topnav" id="topnav" aria-label="Seções"></nav><button class="pill" data-sound aria-pressed="false">♪ Som</button><button class="pill" data-open>☰ Menu</button><a class="pill solid" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar</a></header>
 <div class="progress"><i id="bar"></i></div>
 <div class="hint" id="hint">Deslize para descer<i></i></div>
 <div class="bar"><button class="pill" data-sound aria-pressed="false" aria-label="Som">♪</button><span class="now" id="now"></span><a class="pill solid" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar</a></div>
@@ -205,6 +211,7 @@ const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches && !location
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)), ease=v=>(v=clamp(v),v*v*(3-2*v));
 const back=v=>(v=clamp(v),1+2.2*Math.pow(v-1,3)+1.2*Math.pow(v-1,2));   // lands with a small bounce, like a photo dropped on a table
 let off=0; const STOPS=[];
+const NAV=['Início','A Praia','Aventura','Restaurante','Romântico','Noites','Réveillon'];   // top links on wide screens
 CH.forEach((c,i)=>{ c.cards=c.cards||[]; c.start=off; c.len=IN+CARD*c.cards.length+OUT; c.end=off+c.len;
   for(let k=0;k<=c.cards.length;k++) STOPS.push({p:c.start+IN+CARD*k, ch:i});
   off=c.end; if(i<CH.length-1) off+=LINK });
@@ -307,6 +314,7 @@ const els=CH.map((c,i)=>{
   const b=document.createElement('button'); b.className='ch';
   b.innerHTML=`<img src="${PHOTO(c.img)}" alt=""><div><small>${String(i+1).padStart(2,'0')} · ${c.k}</small><span>${c.short}</span></div>`;
   b.onclick=()=>jump(i); $('list').appendChild(b);
+  const n=document.createElement('a'); n.href='#'; n.textContent=NAV[i]; n.onclick=e=>{ e.preventDefault(); jump(i); }; $('topnav').appendChild(n);
   return {t,pols,b};
 });
 
@@ -604,7 +612,7 @@ function draw(p){
   });
   const cur=CH.reduce((a,c,i)=>p>=c.start-LINK/2?i:a,0);
   if(cur!==active){ active=cur; const c=CH[cur], label=`${String(cur+1).padStart(2,'0')} — ${c.short}`;
-    $('status').textContent=label; $('now').textContent=label; els.forEach((e,i)=>e.b.classList.toggle('on',i===cur)); }
+    $('status').textContent=label; $('now').textContent=label; els.forEach((e,i)=>e.b.classList.toggle('on',i===cur)); document.querySelectorAll('#topnav a').forEach((a,i)=>a.classList.toggle('on',i===cur)); }
   // the name surfaces in the mist of every transition (Joel: "Pousada Trancoso needs more attention")
   const li=CH.findIndex((c,k)=>CH[k+1]&&p>c.end&&p<CH[k+1].start), lu=li<0?0:(p-CH[li].end)/LINK;
   $('veil').style.opacity=(li<0?0:Math.pow(Math.sin(Math.PI*clamp(lu)),2)*.85).toFixed(3);
