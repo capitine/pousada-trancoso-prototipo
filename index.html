@@ -94,7 +94,7 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 .topnav{display:none;gap:16px}
 .topnav a{color:var(--paper);text-decoration:none;opacity:.78;padding-bottom:3px;border-bottom:1.5px solid transparent;white-space:nowrap}
 .topnav a:hover{opacity:1}.topnav a.on{opacity:1;border-color:var(--gold)}
-@media (min-width:1180px){.topnav{display:flex}.top .pill[data-open],#status{display:none}}
+@media (min-width:1280px){.topnav{display:flex}.top .pill[data-open],#status{display:none}}
 .pill,.top b{white-space:nowrap}@media (max-width:1050px){#status{display:none}}   /* mid-width screens: nothing wraps */
 .burger{display:none;background:none;border:0;color:var(--paper);font-size:26px;line-height:1;padding:2px 4px}
 .drawer header button{background:none;border:0;font-size:26px;line-height:1;padding:4px 8px}
@@ -184,6 +184,11 @@ const CH = [
   {img:'02-setiba', fx:.42, fy:.5, pan:[-.05,0], dive:.25, sweep:1, side:'right', k:'A praia', short:'Praia e piscina',
    cards:[['v-piscina','A piscina'],['v-cafe','Café da manhã'],['v-praia','Setiba vista do alto']],
    lyric:'O sol abriu lá em Setiba, o mar azul chamando pra brincar', h:'Praia, piscina e café da manhã', p:'Duas piscinas, área de lazer ao ar livre e café da manhã incluso. A praia de Setiba fica logo ali.'},
+  // Quartos (Joel, Oct 23, after studying Pontal de Ubu's "Acomodações"): the pousada's own rooms from its Hotels.com listing
+  {img:'07-quartos', fx:.5, fy:.55, pan:[.03,0], dive:.18, side:'left', k:'Hospedagem', short:'Quartos',
+   cards:[['q-casal','Suíte de casal'],['q-familia','Quarto família · casal + beliche'],['q-ar','Ar-condicionado e TV'],['q-chales','Chalés no jardim'],['q-varanda','Varanda com rede']],
+   h:'Quartos para casal e família', p:'Suítes de casal, quartos com beliche para quem vem com as crianças e chalés no jardim. Roupa de cama e toalhas incluídas, com café da manhã.',
+   note:'Fotos do anúncio da pousada no Hotels.com · confirmar tipos e preços com a pousada'},
   {img:'03-parque', fx:.5, fy:.5, pan:[0,.05], dive:.42, side:'left', k:'Aventura', short:'Quadriciclo e lagoa', cards:[['v-quadriciclo','Passeio de quadriciclo'],['v-dunas','Pelas dunas da restinga'],['ig-familia','Fim de semana em família']],
    lyric:'De quadriciclo pela restinga', h:'Quadriciclo, lagoa e restinga', p:'Passeio de quadriciclo pela região do Parque Paulo César Vinha, onde a lagoa de água escura encontra o mar.',
    price:[['R$ 400','Casal, com café'],['R$ 490','Casal + 1 filho']], note:'Fim de semana em família · outubro a dezembro, sexta a domingo'},
@@ -211,7 +216,7 @@ const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches && !location
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)), ease=v=>(v=clamp(v),v*v*(3-2*v));
 const back=v=>(v=clamp(v),1+2.2*Math.pow(v-1,3)+1.2*Math.pow(v-1,2));   // lands with a small bounce, like a photo dropped on a table
 let off=0; const STOPS=[];
-const NAV=['Início','A Praia','Aventura','Restaurante','Romântico','Noites','Réveillon'];   // top links on wide screens
+const NAV=['Início','A Praia','Quartos','Aventura','Restaurante','Romântico','Noites','Réveillon'];   // top links on wide screens
 CH.forEach((c,i)=>{ c.cards=c.cards||[]; c.start=off; c.len=IN+CARD*c.cards.length+OUT; c.end=off+c.len;
   for(let k=0;k<=c.cards.length;k++) STOPS.push({p:c.start+IN+CARD*k, ch:i});
   off=c.end; if(i<CH.length-1) off+=LINK });
