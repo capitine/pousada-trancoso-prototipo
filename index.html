@@ -189,7 +189,7 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 <script>
 // Freshness check (Joel: a refresh must always show the latest fix). deploy.sh stamps SITE_VERSION and version.txt;
 // if this copy is older than what's live (a cached page), reload once.
-const SITE_VERSION='20261023170047';
+const SITE_VERSION='20261023170406';
 if(SITE_VERSION!=='dev') fetch('version.txt?'+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(v=>{ v=v.trim();
   try{ if(v&&v!==SITE_VERSION&&sessionStorage.getItem('pt-reloaded')!==v){ sessionStorage.setItem('pt-reloaded',v); location.reload(); } }catch(e){} }).catch(()=>{});
 // fx/fy: where to keep the crop on a tall phone screen (0..1 across the photo). pan: sideways camera travel over the scene.
