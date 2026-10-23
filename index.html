@@ -118,6 +118,14 @@ h1,h2{font:600 clamp(32px,3.8vw,54px)/1.04 Fraunces,serif;margin:12px 0 14px}
 .mp ol b{margin:0;font-size:13px}.mp ol em{font:400 10px Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-style:normal;white-space:nowrap}
 .mp ol button.now{background:rgba(246,239,226,.12)}.mp ol button.now b{color:var(--coral)}
 .bar{display:none}
+.tip{position:fixed;z-index:8;max-width:250px;padding:10px 14px;border-radius:12px;background:var(--paper);color:var(--night);
+  font:500 13px/1.4 Inter,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;translate:0 6px;transition:opacity .45s,translate .45s;pointer-events:none}
+.tip.on{opacity:1;translate:0 0}
+.tip::after{content:"";position:absolute;left:var(--ax,24px);width:10px;height:10px;background:var(--paper);transform:translateX(-50%) rotate(45deg)}
+.tip.below::after{top:-5px}.tip.above::after{bottom:-5px}
+[data-sound].glow{animation:glow 2.6s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(217,180,106,0)}50%{box-shadow:0 0 0 5px rgba(217,180,106,.3),0 0 18px rgba(217,180,106,.55)}}
+@media (prefers-reduced-motion:reduce){[data-sound].glow{animation:none;box-shadow:0 0 0 3px rgba(217,180,106,.45)}}
 .tap{position:fixed;left:50%;bottom:90px;translate:-50% 0;z-index:7;display:none;padding:12px 20px;border-radius:99px;border:0;
   background:var(--coral);color:#fff;font:500 14px Inter,sans-serif;letter-spacing:.04em;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.4);animation:tapPulse 1.8s ease-in-out infinite}
 .tap.on{display:block}
@@ -468,7 +476,7 @@ setBeach(BEACH);
 $('mpV').oninput=e=>{ VOL=+e.target.value; if(MASTER) MASTER.gain.setTargetAtTime(VOL*VOL*QUIET,ctx.currentTime,.05);
   e.target.previousElementSibling.textContent=VOL<.01?'🔇':VOL<.5?'🔈':'🔊'; try{ localStorage.setItem('pt-vol',VOL) }catch(err){} };
 let mpT=null, mpBtn=null;
-function openMP(btn){ clearTimeout(mpT); mpBtn=btn; const r=btn.getBoundingClientRect(), up=r.top>innerHeight/2;
+function openMP(btn){ clearTimeout(mpT); mpBtn=btn; markSeen(); const r=btn.getBoundingClientRect(), up=r.top>innerHeight/2;
   MP.style.left=Math.min(innerWidth-MP.offsetWidth-12, Math.max(12, r.left+r.width/2-MP.offsetWidth/2))+'px';
   MP.style.top=(up? r.top-MP.offsetHeight-10 : r.bottom+10)+'px'; MP.classList.add('on'); showSong(); }
 const closeMP=(ms=1500)=>{ clearTimeout(mpT); mpT=setTimeout(()=>MP.classList.remove('on'),ms); };
@@ -508,6 +516,22 @@ tap.onclick=()=>{ wake(); setTimeout(showTap,300); };
 // iPhone: without this, the ring/silent switch mutes the page's sound
 try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}
 sound(true); ctx.onstatechange=showTap; setTimeout(showTap,600);
+// First visit: the ♪ button glows softly and a small note points at it once, so people find the player
+// (Joel: "non-intrusive, but tells the user the music is here"). Both stop for good once the player is opened.
+let seenMP=false; try{ seenMP=localStorage.getItem('pt-mp-seen')==='1' }catch(e){}
+const tip=document.createElement('div'); tip.className='tip'; tip.setAttribute('role','status');
+tip.textContent='♪ A música está aqui: toque para pausar, pular ou escolher outra'; document.body.appendChild(tip);
+function markSeen(){ if(seenMP) return; seenMP=true; try{ localStorage.setItem('pt-mp-seen','1') }catch(e){}
+  tip.classList.remove('on'); document.querySelectorAll('[data-sound]').forEach(x=>x.classList.remove('glow')); }
+function showTip(){
+  if(seenMP) return; if(tap.classList.contains('on')||isOpen()){ setTimeout(showTip,2500); return; }
+  const b=[...document.querySelectorAll('[data-sound]')].find(x=>x.offsetParent!==null); if(!b) return;
+  const r=b.getBoundingClientRect(), up=r.top>innerHeight/2; tip.classList.toggle('above',up); tip.classList.toggle('below',!up);
+  const w=tip.offsetWidth, left=clamp(r.left+r.width/2-w/2,12,innerWidth-w-12);
+  tip.style.left=left+'px'; tip.style.top=(up?r.top-tip.offsetHeight-14:r.bottom+14)+'px'; tip.style.setProperty('--ax',(r.left+r.width/2-left)+'px');
+  tip.classList.add('on'); setTimeout(()=>tip.classList.remove('on'),8000);
+}
+if(!seenMP){ document.querySelectorAll('[data-sound]').forEach(x=>x.classList.add('glow')); setTimeout(showTip,4500); }
 // beach life, at random times so it never repeats the same way: gulls now and then, kids far away
 // kids 35% quieter than before (Joel, Oct 22: "the kids screaming are a little loud")
 const LIFE=[['gaivota-1',.35],['gaivota-2',.32],['criancas-1',.18],['criancas-2',.17],['criancas-3',.18],['criancas-4',.17],['criancas-c1',.2],['criancas-c2',.2],['criancas-c3',.2]];
