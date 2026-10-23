@@ -164,11 +164,11 @@ const CH = [
   // sweep -1: on a phone the crop starts on the Heineken (right) and glides to the beer glass (left)
   {img:'04-mesa-pousada', fx:.5, fy:.72, pan:[.03,-.02], sweep:-1, side:'left', k:'Restaurante Trancoso', short:'Moqueca e frutos do mar',
    cards:[['v-moqueca','Moqueca de cação capixaba'],['v-risoto','Risoto de camarão'],['v-cacao','Cação ao molho de camarão'],['v-almoco','Almoço à beira da piscina'],['fb-festival','Festival lagosta e caranguejo']],
-   lyric:'Caranguejo na mesa, caipirinha no bar', h:'Moqueca, lagosta e caranguejo', p:'Moqueca capixaba de cação, moqueca de lagosta, risoto de camarão e o festival de caranguejo, servidos à beira da piscina no Restaurante Trancoso.',
+   lyric:'Moqueca é capixaba, o resto é peixada!', lsong:'PT-016-B', h:'Moqueca, lagosta e caranguejo', p:'Moqueca capixaba de cação, moqueca de lagosta, risoto de camarão e o festival de caranguejo, servidos à beira da piscina no Restaurante Trancoso.',
    note:'Preços dos anúncios antigos · confirmar com a pousada'},
   {img:'05-por-do-sol-setiba', fx:.5, fy:.5, pan:[-.04,0], side:'left', k:'Sexta-feira romântica', short:'Sexta romântica',
    cards:[['ig-romantica','Suíte decorada'],['v-jantar','Jantar à luz de velas'],['fb-hidro','Hidro à noite'],['fb-varanda','Petiscos na varanda']],
-   h:'Quando o sol se põe, a mesa é só de vocês', p:'Suíte decorada, jantar à luz de velas e café da manhã no dia seguinte.',
+   lyric:'À luz de velas, Setiba é só nossa', lsong:'PT-015-B', h:'Quando o sol se põe, a mesa é só de vocês', p:'Suíte decorada, jantar à luz de velas e café da manhã no dia seguinte.',
    price:[['R$ 350','Por casal']]},
   {img:'06-salao', fx:.45, fy:.55, pan:[.04,-.02], side:'right', k:'Noites temáticas', short:'Baile e karaokê',
    cards:[['fb-karaoke','Noite de karaokê'],['v-karaoke','Karaokê com animador'],['v-pista','Baile Flashback'],['v-cantor','Show ao vivo']],
@@ -263,8 +263,8 @@ const els=CH.map((c,i)=>{
   const t=document.createElement('article'); t.className='copy '+c.side+(c.hero?' hero':''); const H=i?'h2':'h1';
   t.innerHTML=(c.hero?'<div class="mark">T</div>':'')+`<p class="kicker">${c.hero?'':`<i>${String(i+1).padStart(2,'0')}</i>`}${c.k}</p><${H}>${c.h}</${H}>`+
     (c.tag?`<p class="tag">${c.tag}</p>`:'')+`<p>${c.p}</p>`+
-    // lines from our own song "Vem pro Trancoso" (Joel: show some lyrics here and there); tap to hear it
-    (c.lyric?`<button class="lyric" data-song="PT-012-B">♪ “${c.lyric}”</button>`:'')+
+    // lines from our own songs ("Vem pro Trancoso" unless lsong says another) (Joel: show some lyrics here and there); tap to hear it
+    (c.lyric?`<button class="lyric" data-song="${c.lsong||'PT-012-B'}">♪ “${c.lyric}”</button>`:'')+
     (c.price?`<div class="price">${c.price.map(([a,b])=>`<div><strong>${a}</strong>${b}</div>`).join('')}</div>`:'')+
     (c.note?`<p class="note">${c.note}</p>`:'')+
     (c.cta?`<a class="cta" href="https://wa.me/5527995151979" target="_blank" rel="noopener">Reservar pelo WhatsApp</a>`:'');
@@ -388,13 +388,16 @@ const MIX={ondas:.17, vida:1, musica:.3};   // the three levels Joel tunes by ea
 // Songs: Suno covers of our own Brazilian groove demos. Ordered like an album: samba opens (Joel: start with the most
 // samba/pagode-like), and the two takes of each generation sit five tracks apart since they sound alike. Each take
 // has its own name (places around Guarapari) so no title repeats. [file, name, style]
-const SONGS=[['PT-007-A','Roda em Setiba','samba de roda'],['PT-006-A','Maré de Setiba','bossa nova'],
+// Album order is Joel's (Oct 22): his sung picks open the list, then the instrumentals (the two takes of one
+// generation sit apart), and the second axé take closes it. [file, name, style]
+const SONGS=[['PT-014-B','Domingo de Roda','pagode · cantada'],['PT-015-B','Luz de Velas','bossa · cantada'],
+  ['PT-016-B','Moqueca É Capixaba','baião · cantada'],['PT-017-B','Mais Um Pouquinho','pagode · cantada'],
+  ['PT-012-B','Vem pro Trancoso','axé · cantada'],
+  ['PT-007-A','Roda em Setiba','samba de roda'],['PT-006-A','Maré de Setiba','bossa nova'],
   ['PT-009-A','Ijexá do Entardecer','ijexá'],['PT-008-A','Baião da Varanda','baião'],['PT-001b-A','Violão de Meaípe','violão'],['PT-010-A','Forró da Lua Cheia','forró'],
   ['PT-007-B','Samba das Três Praias','samba de roda'],['PT-006-B','Brisa da Restinga','bossa nova'],
   ['PT-009-B','Lagoa Escura','ijexá'],['PT-008-B','Pé na Areia','baião'],['PT-001b-B','Céu de Peracanga','violão'],['PT-010-B','Poeira da Restinga','forró'],
-  // songs with singing go last so they don't play under the reading (Joel kept the axé; the forró with lyrics PT-011 was left out)
-  ['PT-014-B','Domingo de Roda','pagode · cantada'],   // Joel's pick (Oct 22)
-  ['PT-012-B','Vem pro Trancoso','axé · cantada'],['PT-012-A','Vem pro Trancoso · versão 2','axé · cantada']];   // B first: the take Joel downloaded
+  ['PT-012-A','Vem pro Trancoso · versão 2','axé · cantada']];
 let ctx=null, soundOn=false, lifeT=null, stopT=null, MASTER=null;
 // beach sounds (waves + kids/gulls) can be switched off so only the music plays (Joel, Oct 22); remembered per viewer
 let BEACH=true; try{ BEACH=localStorage.getItem('pt-beach')!=='0' }catch(e){}
